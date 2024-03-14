@@ -1,0 +1,3 @@
+-- This file contains the scripts to create...
+-- - Some other fields that are not defined yet
+-- - Like: <field1>, <field2>, <field3>
