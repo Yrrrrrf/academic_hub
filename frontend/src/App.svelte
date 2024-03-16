@@ -1,15 +1,40 @@
 <script>
-	export let name;
+	// import Query from "./components/Query.svelte";
+
+	import Query from "./components/Query.svelte";
 	import AppHeader from "./components/AppHeader.svelte";
+
+	export let name = 'Ñemña';
 	import STable from "./components/STable.svelte";
+
+	let table_names = [
+			// "author",
+			"book",
+			// "loan",
+			// "publisher",
+			// "topic",
+			// "user",
+			// "libraries",
+	];
+
+
 
 </script>
 
 <main>
-<!--	<h1>Holis {name}!</h1>-->
-	<AppHeader name="Library Management" />
+	<AppHeader name = {name} />
 
-	<STable />
+	{#each table_names as table_name}
+		<Query
+			table_name={table_name}
+			new_q_buttons={
+				{
+					"Pub": "/publisher_id={}",
+					"ISBN": "/isbn={}",
+				}
+			}
+		/>
+	{/each}
 
 </main>
 
@@ -19,13 +44,6 @@
 		padding: 1em;
 		max-width: 240px;
 		margin: 0 auto;
-	}
-
-	h1 {
-		color: #ff3e00;
-		text-transform: uppercase;
-		font-size: 4em;
-		font-weight: 100;
 	}
 
 	@media (min-width: 640px) {

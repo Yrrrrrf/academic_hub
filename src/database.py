@@ -5,7 +5,8 @@
 
     The SessionLocal object is a sessionmaker that will be used to create a new session for each request. The get_db function is a dependency that will be used to get a new session for each request.
 """
-from fastapi import HTTPException
+import inspect
+from fastapi import Depends, HTTPException
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy import BinaryExpression, create_engine
@@ -47,7 +48,7 @@ def get_resource_generic(db: Session, model: Type[Base], condition: BinaryExpres
     Args:
         - db (Session): The database session
         - model (Type[Base]): The model to use
-        - condition (BinaryExpression): The condition to use to filter the resources
+    - condition (BinaryExpression): The condition to use to filter the resources
             - if no condition is provided, all the resources will be returned
     """
     # resource = db.query(model).filter(condition).all()
@@ -60,6 +61,31 @@ def get_resource_generic(db: Session, model: Type[Base], condition: BinaryExpres
         # (_ for _ in ()).throw(HTTPException(status_code=404, detail=f"{model.__tablename__.capitalize()} not found"))
 
 
+# def // get_operations(model, any):
+#     """
+#     Wrapper function to create endpoints for fetching column names and all records of a model.
+#     Uses the class name in lowercase for the endpoint paths.
+#     """
+    
+#     @any.get(f"/{model.__name__.lower()}s/dt/", tags=[model.__name__])
+#     def get_model_column_names():
+#         """
+#         Endpoint to fetch column names of the model.
+#         """
+#         return [c.name for c in model.__table__.columns]
+
+# # PUT NAME USING ONLY THE FIRST LETTER AS UPPERCASE
+#     @any.get(f"/{model.__name__.lower()}s/", tags=[model.__name__])    
+#     def get_all_model_records(db: Session = Depends(get_db)):
+#         """
+#         Endpoint to fetch all records of the model.
+#         """
+#         return get_resource_generic(db, model)
+
+#     @any.get(f"/{model.__name__.lower()}/id={id}", tags=[model.__name__])
+#     def get_user_by_id(id: int, db: Session = Depends(get_db)):
+#         return get_resource_generic(db, model, model.id == id)
+    
 
 # ? TEST --------------------------------------------------------------------------------------
 
