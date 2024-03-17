@@ -1,7 +1,7 @@
 -- Create Database
 -- In PostgreSQL, database creation is outside the scope of SQL scripts run within a database connection.
 
-CREATE DATABASE library_management
+CREATE DATABASE academic_hub
     WITH
     OWNER = postgres
     ENCODING = 'UTF8'

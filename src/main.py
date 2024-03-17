@@ -5,8 +5,12 @@ This file is the entry point for the FastAPI application. It is responsible for 
 """
 # ? External 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from src.model.lib import author, book, link_tables, loan_management, publisher, topic, user, library
+# from src.model.lib import library
+# from src.model.lib import library, book
+# from src.model.lib import author, book, link_tables, loan_management, publisher, topic, user, library
+from src.model.lib import author, book, loan_management, publisher, topic, user, library
 # from .model.lib import loan_management
 
 # ? Local
@@ -51,14 +55,8 @@ def setup(api_app: FastAPI) -> None:
     )
 
 
-from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI()
-
-
-
 # * Create the FastAPI application
-# app = FastAPI()
+app = FastAPI()
 setup(app)  # Setup the application data
 
 # * Add routes (endpoints) to the FastAPI application

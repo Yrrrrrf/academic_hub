@@ -16,8 +16,14 @@ import os
 
 # * Read the environment variables
 load_dotenv()
-# DB_URL_EXAMPLE = "postgresql://user:password@localhost/dbname"
-DB_URL: str = f"postgresql://{os.environ.get('USER')}:{os.environ.get('PASSWORD')}@{os.environ.get('HOST')}/{os.environ.get('DB_NAME')}"
+# # DB_URL_EXAMPLE = "postgresql://user:password@localhost/dbname"
+# DB_URL: str = f"postgresql://{os.environ.get('USER')}:{os.environ.get('PASSWORD')}@{os.environ.get('HOST')}/{os.environ.get('DB_NAME')}"
+
+# ahub_library@localhost
+DB_URL: str = f"postgresql://library_admin:secure_password_for_library@localhost/academic_hub"
+
+
+
 
 # * Create a new SQLAlchemy engine, sessionmaker, and a Base class for the ORM models
 engine = create_engine(DB_URL)

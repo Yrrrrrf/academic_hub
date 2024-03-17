@@ -3,23 +3,8 @@
     import SItemCard from "./SItemCard.svelte";
 
     export let table_name;  // Mandatory prop (name of the table)
-    export let new_q_buttons = {};  // Optional prop for additional query buttons
-
-    let attr = ''; // Define a reactive attribute if needed
-    let q_data = {
-        'All': 's',
-        'ID': '/id={id}',
-        'NAME': '/name={name}',
-        ...new_q_buttons
-    };  // Main query buttons (operations for the table)
 
     let columns = [];  // Define a reactive array if needed
-    let rows = [];  // Define a reactive array if needed
-
-
-    // ? temp
-    let idInput = '';
-    let nameInput = '';
 
     // async function fetch_data(action = 'columns') {
     //     let url = `http://localhost:8000/${table_name}${action === 'columns' ? 's/dt/' : attr}`;
@@ -30,14 +15,9 @@
             const response = await fetch(`http://localhost:8000/${table_name}${action}`);
             if (!response.ok) new Error('Server responded with an error.');
             const data = await response.json();
-            // return the data to the caller
             return Array.isArray(data) ? data : [data];   // Always convert to array
-            // rows = Array.isArray(data) ? data : [data];   // Always convert to array
         }
-        catch (error) {
-            console.error(`Error fetching ${action}:`, error);
-            rows = []; // Clear rows on error: t
-        }
+        catch (error) {console.error(`Error fetching ${action}:`, error);}
     }
 
     async function get_columns() {
@@ -49,39 +29,14 @@
         get_columns();
     });
 
-    // function handleButtonClick() {
-    //     let data = fetch_data('s').then(data => {
-    //         console.log(data);
-    //         let item = data;
-    //     });
-    // }
+    let show_card = false;
 
-
-
-    let selectedItem = null;
-
-    async function handleButtonClick(column) {
-        let action;
-        switch (column) {
-            default:
-                action = `/${column.toLowerCase()}=1}`;
-                console.log(action);
-                break;
-        }
-
-        rows = await fetch_data(action);
-        if (rows.length > 0) {
-            // Assuming the first element is the selected one
-            selectedItem = {
-                imageUrl: rows[0].imageUrl || 'default_image.jpg', // Replace with actual image field
-                name: rows[0].name || '', // Replace with actual name field
-                id: rows[0].id || '', // Replace with actual id field
-                additionalData: { ...rows[0] }
-            };
-        }
+    async function handleButtonClick(action) {
+        // action = action.replace('{}', idInput);  // REPLACE {} WITH THE VALUE OF THE INPUT
+        // fetch_data(action).then(data => console.log(data));
+        let data = (await fetch_data(action));
+        console.log(data);
     }
-
-
 
 </script>
 
@@ -92,20 +47,21 @@
         <h1>{table_name.charAt(0).toUpperCase() + table_name.slice(1)}</h1>
     </div>
 
-    <button on:click={() => handleButtonClick()}>All</button>  <!-- Default query button (all rows) -->
+    <input type="text" bind:value={idInput} placeholder="id">
+
+    <button on:click={() => handleButtonClick('s')}>All</button>  <!-- Default query button (all rows) -->
     {#each columns as column}
-        <!-- Individual query buttons (operations for the table) -->
-        <button on:click={() => handleButtonClick(column)}>{column}</button>
+        <button on:click={() => handleButtonClick('/'+column+'={}')}>{column}</button>
     {/each}
 
-    {#if selectedItem}
-        <SItemCard
-                imageUrl={selectedItem.imageUrl}
-                name={selectedItem.name}
-                id={selectedItem.id}
-                additionalData={selectedItem.additionalData}
-        />
-    {/if}
+
+    <!--{#if show_card}-->
+    <!--    <SItemCard-->
+    <!--        id={idInput}-->
+    <!--        name={nameInput}-->
+    <!--        data={l_data-->
+    <!--    />-->
+    <!--{/if}-->
 
 </main>
 

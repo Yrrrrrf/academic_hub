@@ -6,29 +6,15 @@
 
 
 	let tables = [
-		// {name: "user"},
-		// {name: "publisher"},
-		// {name: "author"},
-		// {name: "topic"},
-		// {name: "library"},
-		{
-			name: "book",
-			qButtons: {
-				"Pub": "/publisher_id=2",
-				"ISBN": "/isbn={}",
-			}
-		},
-
-		{
-			name: "loan",
-			qButtons: {
-				book_serial_id: "/book_serial_id={}",
-				return_date: "/return_date={}",
-				loan_date: "/loan_date={}",
-			}
-		},
-
+		// "loan",
+		// "user",
+		// "publisher",
+		// "author",
+		// "topic",
+		"library",
+		"book",
 	];
+
 </script>
 
 <main>
@@ -36,8 +22,7 @@
 
 	{#each tables as table}
 		<Query
-			table_name={table.name}
-			new_q_buttons={table.qButtons}
+			table_name={table}
 		/>
 	{/each}
 

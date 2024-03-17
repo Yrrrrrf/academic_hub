@@ -1,22 +1,23 @@
 <!-- QueryItem.svelte -->
 <script>
-    export let imageUrl = ''; // URL to the image
+    export let imageUrl = 'https://via.placeholder.com/150'; // URL to the image
     export let name = ''; // Name of the item
     export let id = ''; // ID of the item
     export let additionalData = {}; // Object with the rest of the data
 
-    // Placeholder image or icon URL
-    const placeholderImage = 'placeholder-icon-url-here'; // Update this with your desired placeholder
+    // Determine if an image is provided
+    $: hasImage = imageUrl !== '';
 </script>
 
 <div class="query-item">
     <div class="media">
-        <img alt="Item image"
-             class="image"
-             on:error={
-                () => (imageUrl = placeholderImage)
-                } src={imageUrl || placeholderImage}
-        />
+        {#if hasImage}
+            <img class="image" src={imageUrl} alt="Item image" />
+        {:else}
+            <div class="image placeholder">
+                No Image Available
+            </div>
+        {/if}
     </div>
     <div class="details">
         <h2 class="name">{name}</h2>
@@ -34,34 +35,42 @@
 <style>
     .query-item {
         display: flex;
-        align-items: flex-start; /* Adjust alignment */
+        align-items: center;
         gap: 20px;
-        background-color: #f9f9f9; /* Lighter background */
+        background-color: #f9f9f9;
         border-radius: 16px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Softer shadow */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         padding: 20px;
         margin: 20px;
-        transition: transform 0.2s; /* Smooth transition */
-    }
-
-    .query-item:hover {
-        transform: translateY(-5px); /* Slight lift on hover */
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+        position: relative; /* Needed for text overlay */
     }
 
     .media {
         flex-shrink: 0;
+        position: relative;
+        width: 100px; /* Fixed size */
+        height: 100px; /* Fixed size */
+        border-radius: 50%; /* Circular shape */
+        overflow: hidden; /* Ensure content fits */
         display: flex;
         align-items: center;
         justify-content: center;
+        background-color: #eaeaea; /* Background for the placeholder */
     }
 
     .image {
-        width: 100px; /* Adjust as needed */
-        height: 100px; /* Adjust as needed */
+        width: 100%;
+        height: 100%;
         object-fit: cover;
-        border-radius: 50%; /* Circular image */
-        border: 2px solid #eaeaea; /* Image border for distinction */
+    }
+
+    .placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #666;
+        font-weight: bold;
     }
 
     .details {
@@ -75,20 +84,20 @@
 
     .name {
         font-size: 24px;
-        font-weight: 600; /* Slightly less bold */
-        color: #333; /* Darker font color */
+        font-weight: bold;
+        color: black; /* BLACK color for name */
     }
 
     .id {
         font-size: 16px;
-        color: #666; /* Lighter font color */
+        color: #666; /* Lighter for ID */
         margin-top: 5px;
     }
 
     .additional-data {
         margin-top: 15px;
         padding-top: 10px;
-        border-top: 1px solid #eee; /* Separator */
+        border-top: 1px solid #eee;
     }
 
     .data-field {
@@ -97,6 +106,6 @@
 
     .data-field strong {
         margin-right: 5px;
-        color: #444; /* Strong color for key */
+        color: #444;
     }
 </style>
