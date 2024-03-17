@@ -1,5 +1,6 @@
 <script>
     import { onMount } from 'svelte';
+    import SItemCard from "./SItemCard.svelte";
 
     export let table_name;  // Mandatory prop (name of the table)
     export let new_q_buttons = {};  // Optional prop for additional query buttons
@@ -7,8 +8,8 @@
     let attr = ''; // Define a reactive attribute if needed
     let q_data = {
         'All': 's',
-        'byId': '/id={}',
-        'byName': '/name={}',
+        'ID': '/id={id}',
+        'NAME': '/name={name}',
         ...new_q_buttons
     };  // Main query buttons (operations for the table)
 
@@ -16,39 +17,97 @@
     let rows = [];  // Define a reactive array if needed
 
 
-    async function fetch_data(action = 'columns') {
-        let url = `http://localhost:8000/${table_name}${action === 'columns' ? 's/dt/' : attr || ''}`;
+    // ? temp
+    let idInput = '';
+    let nameInput = '';
 
+    // async function fetch_data(action = 'columns') {
+    //     let url = `http://localhost:8000/${table_name}${action === 'columns' ? 's/dt/' : attr}`;
+
+    // modified fetch_data function to always recibe always the action
+    async function fetch_data(action) {
         try {
-            const data = await (await fetch(url)).json();
-            console.log(data);
-            action === 'columns' ? columns = data : rows = data;
-        } catch (error) {console.error(`Error fetching ${action}:`, error)}
+            const response = await fetch(`http://localhost:8000/${table_name}${action}`);
+            if (!response.ok) new Error('Server responded with an error.');
+            const data = await response.json();
+            // return the data to the caller
+            return Array.isArray(data) ? data : [data];   // Always convert to array
+            // rows = Array.isArray(data) ? data : [data];   // Always convert to array
+        }
+        catch (error) {
+            console.error(`Error fetching ${action}:`, error);
+            rows = []; // Clear rows on error: t
+        }
+    }
+
+    async function get_columns() {
+        columns = await fetch_data('s/dt/');
+        console.log(columns);
     }
 
     onMount(() => {
-        fetch_data();  // Fetch columns
-        console.log(q_data);  // Log the query buttons for debugging
+        get_columns();
     });
 
-    // Function to handle button clicks
-    function handleButtonClick(action) {
-        attr = q_data[action];
-        fetch_data('rows');  // Fetch rows
+    // function handleButtonClick() {
+    //     let data = fetch_data('s').then(data => {
+    //         console.log(data);
+    //         let item = data;
+    //     });
+    // }
+
+
+
+    let selectedItem = null;
+
+    async function handleButtonClick(column) {
+        let action;
+        switch (column) {
+            default:
+                action = `/${column.toLowerCase()}=1}`;
+                console.log(action);
+                break;
+        }
+
+        rows = await fetch_data(action);
+        if (rows.length > 0) {
+            // Assuming the first element is the selected one
+            selectedItem = {
+                imageUrl: rows[0].imageUrl || 'default_image.jpg', // Replace with actual image field
+                name: rows[0].name || '', // Replace with actual name field
+                id: rows[0].id || '', // Replace with actual id field
+                additionalData: { ...rows[0] }
+            };
+        }
     }
+
 
 
 </script>
 
 
-<div class="query-container">
-    <h1>{table_name.charAt(0).toUpperCase() + table_name.slice(1)}</h1>
-    {#each Object.keys(q_data) as action}
-        <button on:click={() => handleButtonClick(action)}>
-            {action}
-        </button>
+<main>
+
+    <div class="query-container">
+        <h1>{table_name.charAt(0).toUpperCase() + table_name.slice(1)}</h1>
+    </div>
+
+    <button on:click={() => handleButtonClick()}>All</button>  <!-- Default query button (all rows) -->
+    {#each columns as column}
+        <!-- Individual query buttons (operations for the table) -->
+        <button on:click={() => handleButtonClick(column)}>{column}</button>
     {/each}
-</div>
+
+    {#if selectedItem}
+        <SItemCard
+                imageUrl={selectedItem.imageUrl}
+                name={selectedItem.name}
+                id={selectedItem.id}
+                additionalData={selectedItem.additionalData}
+        />
+    {/if}
+
+</main>
 
 <style>
     .query-container {

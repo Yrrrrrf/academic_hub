@@ -8,3 +8,4 @@ CREATE DATABASE library_management
     LOCALE_PROVIDER = 'libc'
     CONNECTION LIMIT = -1
     IS_TEMPLATE = False;
+
