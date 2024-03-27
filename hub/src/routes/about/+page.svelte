@@ -1,16 +1,14 @@
 <!-- About.svelte -->
 <script>
-	// Any JavaScript logic for the About page can go here
+	import logo from '$lib/images/diary.png';
 </script>
 
 <div class="container">
 	<h1>
-		<img src="/assets/icons/books.png" alt="Academic Hub" width="192">
+		<img src={logo} alt="Academic Hub" width="192">
 		Academic Hub
 	</h1>
-
 	<p>Meant to be a comprehensive solution for managing libraries, designed to handle the inventory of books, process loans, manage user information, and provide detailed reports.</p>
-
 
 	<h2>Features</h2>
 	<li>The system is built on a relational database, supporting operations such as registering new books, tracking loaned books, and generating various reports for library staff.</li>
