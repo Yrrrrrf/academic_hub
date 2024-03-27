@@ -7,10 +7,7 @@ This file is the entry point for the FastAPI application. It is responsible for 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# from src.model.lib import library
-# from src.model.lib import library, book
-# from src.model.lib import author, book, link_tables, loan_management, publisher, topic, user, library
-from src.model.lib import author, book, loan_management, publisher, topic, user, library
+from src.model.library import author, book, loan_management, publisher, topic, user, library
 # from .model.lib import loan_management
 
 # ? Local

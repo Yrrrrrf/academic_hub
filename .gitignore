@@ -129,3 +129,4 @@ dmypy.json
 
 # Own stuff
 .env
+doc/*
