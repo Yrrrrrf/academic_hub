@@ -1,73 +1,57 @@
-# from sqlalchemy import Column, Integer, String, ForeignKey, Date, Time, Numeric
-# from src.database import base_model
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Time, Numeric
+from src.database import base_model
 
 
-# ID_BaseModel, Named_BaseModel = base_model(schema='school_management')
+SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='school_management')
 
-# class School(Named_BaseModel):
-#     __tablename__ = 'school'
 
-# class Instructor(Named_BaseModel):
-#     __tablename__ = 'instructor'
+# * For each model, create a class that inherits from the appropriate base class
+for model in ['School', 'Instructor', 'Subject', 'AcademicPeriod', 'ExamType']:
+    exec(f'class {model}(NamedBaseModel): pass')
 
-# class Subject(Named_BaseModel):
-#     __tablename__ = 'subject'
+class Student(IDBaseModel):
+    # todo: check if this is correct! Declaring again the id column...
+    id = Column(Integer, ForeignKey('general_dt.general_user.id'), primary_key=True)
+    program_id = Column(Integer, ForeignKey('school_management.program.id'), nullable=False)
+    # program = relationship("Program", back_populates="students")
 
-# class AcademicPeriod(Named_BaseModel):
-#     __tablename__ = 'academic_period'
+class Program(NamedBaseModel):
+    school_id = Column(Integer, ForeignKey('school_management.school.id'), nullable=False)
+    # school = relationship("School", back_populates="programs")
 
-# class ExamType(Named_BaseModel):
-#     __tablename__ = 'exam_type'
+class ClassGroup(IDBaseModel):
+    instructor_id = Column(Integer, ForeignKey('school_management.instructor.id'), nullable=False)
+    subject_id = Column(Integer, ForeignKey('school_management.subject.id'), nullable=False)
+    period_id = Column(Integer, ForeignKey('school_management.academic_period.id'), nullable=False)
+    # instructor = relationship("Instructor")
+    # subject = relationship("Subject")
+    # academic_period = relationship("AcademicPeriod")
 
-# class Student(ID_BaseModel):
-#     __tablename__ = 'student'
+class StudentEnrollment(IDBaseModel):
+    student_id = Column(Integer, ForeignKey('school_management.student.id'), nullable=False)
+    class_group_id = Column(Integer, ForeignKey('school_management.class_group.id'), nullable=False)
+    enrollment_date = Column(Date, nullable=False)
 
-#     # todo: check if this is correct! Declaring again the id column...
-#     id = Column(Integer, ForeignKey('general_dt.general_user.id'), primary_key=True)
-#     program_id = Column(Integer, ForeignKey('school_management.program.id'), nullable=False)
-#     # program = relationship("Program", back_populates="students")
+class Grade(IDBaseModel):
+    student_enrollment_id = Column(Integer, ForeignKey('school_management.student_enrollment.id'), nullable=False)
+    exam_type_id = Column(Integer, ForeignKey('school_management.exam_type.id'), nullable=False)
+    grade = Column(Numeric, nullable=False)
+    grading_date = Column(Date, nullable=False)
 
-# class Program(Named_BaseModel):
-#     __tablename__ = 'program'
-#     school_id = Column(Integer, ForeignKey('school_management.school.id'), nullable=False)
-#     # school = relationship("School", back_populates="programs")
+class Attendance(IDBaseModel):
+    student_enrollment_id = Column(Integer, ForeignKey('school_management.student_enrollment.id'), nullable=False)
+    date = Column(Date, nullable=False)
+    status = Column(String(10), nullable=False)
 
-# class ClassGroup(ID_BaseModel):
-#     __tablename__ = 'class_group'
-    
-#     instructor_id = Column(Integer, ForeignKey('school_management.instructor.id'), nullable=False)
-#     subject_id = Column(Integer, ForeignKey('school_management.subject.id'), nullable=False)
-#     period_id = Column(Integer, ForeignKey('school_management.academic_period.id'), nullable=False)
-#     # instructor = relationship("Instructor")
-#     # subject = relationship("Subject")
-#     # academic_period = relationship("AcademicPeriod")
+class ClassSchedule(IDBaseModel):
+    class_group_id = Column(Integer, ForeignKey('school_management.class_group.id'), nullable=False)
+    day_of_week = Column(String(10), nullable=False)
+    start_time = Column(Time, nullable=False)
+    end_time = Column(Time, nullable=False)
 
-# class StudentEnrollment(ID_BaseModel):
-#     __tablename__ = 'student_enrollment'
-    
-#     student_id = Column(Integer, ForeignKey('school_management.student.id'), nullable=False)
-#     class_group_id = Column(Integer, ForeignKey('school_management.class_group.id'), nullable=False)
-#     enrollment_date = Column(Date, nullable=False)
 
-# class Grade(ID_BaseModel):
-#     __tablename__ = 'grade'
-    
-#     student_enrollment_id = Column(Integer, ForeignKey('school_management.student_enrollment.id'), nullable=False)
-#     exam_type_id = Column(Integer, ForeignKey('school_management.exam_type.id'), nullable=False)
-#     grade = Column(Numeric, nullable=False)
-#     grading_date = Column(Date, nullable=False)
+school_classes = [obj for _, obj in globals().items() if isinstance(obj, type) and obj.__module__ == __name__]
 
-# class Attendance(ID_BaseModel):
-#     __tablename__ = 'attendance'
-    
-#     student_enrollment_id = Column(Integer, ForeignKey('school_management.student_enrollment.id'), nullable=False)
-#     date = Column(Date, nullable=False)
-#     status = Column(String(10), nullable=False)
 
-# class ClassSchedule(ID_BaseModel):
-#     __tablename__ = 'class_schedule'
-    
-#     class_group_id = Column(Integer, ForeignKey('school_management.class_group.id'), nullable=False)
-#     day_of_week = Column(String(10), nullable=False)
-#     start_time = Column(Time, nullable=False)
-#     end_time = Column(Time, nullable=False)
+print(f"\033[0;30;43mACADEMIC HUB - School Management\033[m")
+[print(f"\t\033[3m{sch_c.__name__}\033[m") for sch_c in school_classes]

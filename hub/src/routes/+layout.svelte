@@ -11,9 +11,9 @@
 	</main>
 
 
-	<footer class="flex flex-col justify-center items-center p-3">
+	<f4ooter class="flex flex-col justify-center items-center p-3">
 		<p>Check <a href="http://github.com/Yrrrrrf/academic_hub/tree/main/hub" target="_blank">source code</a> on GitHub</p>
-	</footer>
+	</f4ooter>
 
 
 </div>

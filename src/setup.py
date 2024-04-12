@@ -1,39 +1,48 @@
 import os
-from setuptools import setup, find_packages, Command
+
 from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 
-# todo: test this setup file
-# todo: add the sql files to the sql folder
+from src.main import app
 
-class CreateDatabase(Command):
-    """Setuptools Command class to execute SQL scripts for database schema creation."""
-    description = "Create the database schema from SQL files."
-    user_options = []  # Required by the Command interface
+def setup_database(db_url: str, sql_directory: str = './sql'):
+    """
+    Set up the database by executing SQL scripts in a specified directory in numerical order.
+    
+    :param db_url: Database connection URL.
+    :param sql_directory: Directory containing SQL scripts.
+    """
+    engine = create_engine(db_url)
+    sql_files = sorted(
+        [f for f in os.listdir(sql_directory) if f.endswith('.sql')],
+        key=lambda x: int(x.split('_')[0])
+    )
+    
 
-    def initialize_options(self):
-        """Set default values for options."""
-        pass
+    print(f"Database URL: {db_url}")
+    print(f"Found {len(sql_files)} SQL scripts in '{sql_directory}'.")
+    
+    print("\nExecuting SQL scripts...")
 
-    def finalize_options(self):
-        """Post-process options."""
-        pass
 
-    def run(self):
-        """Run command to execute the SQL scripts that setup the database schema."""
-        engine = create_engine('postgresql://user:password@localhost/dbname')
-        sql_path = 'sql/'  # Directory where SQL files are stored
-        for script in os.listdir(sql_path):
-            if script.endswith('.sql'):
-                with open(os.path.join(sql_path, script), 'r') as file:
-                    sql_command = file.read()
-                    engine.execute(sql_command)  # Execute SQL script
-        print("Database schema created successfully.")
+    for filename in sql_files:
+        print(f"Executing '{filename}'...")
+        filepath = os.path.join(sql_directory, filename)
+        with open(filepath, 'r', encoding='utf-8') as file:
+            sql_script = file.read()
+            try:
+                with engine.begin() as connection:
+                    connection.execute(sql_script)
+                print(f"\033[92mExecuted '{filename}' successfully.\033[0m")
+            except SQLAlchemyError as e:
+                print(f"\033[91mError executing '{filename}': {e}\033[0m")
+                break  # Stop if any SQL fails
 
-setup(
-    name='YourProject',
-    version='0.1.0',
-    packages=find_packages(),
-    cmdclass={
-        'create_db': CreateDatabase  # Add custom command to setuptools
-    },
-)
+
+@app.on_event("startup")
+def startup_event():
+    db_url = "postgresql://user:password@localhost/yourdb"
+    setup_database(db_url)
+    print("Database setup completed.")
+
+# Define your API routes here

@@ -15,6 +15,8 @@ This route contains the main methods that will be used to display the home page 
 """
 
 # create an example route that shows the name of the application
+
+# create an example route that shows the name of the application
 @home.get("/", tags=["home"])
 def read_root():
     return {"Hello From": "Home Route"}
