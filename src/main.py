@@ -7,24 +7,10 @@ This file is the entry point for the FastAPI application. It is responsible for 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.model.library import author, book, loan_management, publisher, topic, user, library
-# from .model.lib import loan_management
 
 # ? Local
-from src.routes import home, library_routes
+from src.routes import home, library, school
 from src.config import Config
-
-
-# define the main function (entry point) for the FastAPI application
-# in case we want to run the application using the command `python src/main.py`
-# otherwise, we can use: `uvicorn src.main:app --reload --host 127.0.0.1 --port 8000`
-
-# def run() -> None:
-#     import uvicorn
-#     uvicorn.run(app, host='127.0.0.1', port=8000)
-
-# if __name__ == '__main__':
-#     run()
 
 
 def setup(api_app: FastAPI) -> None:
@@ -57,11 +43,34 @@ app = FastAPI()
 setup(app)  # Setup the application data
 
 # * Add routes (endpoints) to the FastAPI application
+# Add routes for the home page
 app.include_router(home.home)
-app.include_router(library_routes.by_attribute)
-app.include_router(library_routes.library_views)
+
+# Add routes for the library model
+app.include_router(library.basic_dt)
+app.include_router(library.by_attr)
+# app.include_router(library_routes.views)
+
+# Add routes for the school model
+app.include_router(school.basic_dt)
+app.include_router(school.by_attr)
+# app.include_router(school_routes.views)
+
 
 # * check if this is viable or not
-# app.include_router(library.by_attribute, prefix="/lib")
-# app.include_router(library.library_views, prefix="/lib")
+# app.include_router(library_routes.library_views, prefix="/lib")
+# app.include_router(school_routes.school_views, prefix="/school")
 
+
+
+
+# define the main function (entry point) for the FastAPI application
+# in case we want to run the application using the command `python src/main.py`
+# otherwise, we can use: `uvicorn src.main:app --reload --host 127.0.0.1 --port 8000`
+
+# def run() -> None:
+#     import uvicorn
+#     uvicorn.run(app, host='127.0.0.1', port=8000)
+
+# if __name__ == '__main__':
+#     run()

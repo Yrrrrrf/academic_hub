@@ -1,6 +1,6 @@
 <!--Library Management-->
 <script>
-
+    // You can import any necessary scripts or data here
 </script>
 
 <main>

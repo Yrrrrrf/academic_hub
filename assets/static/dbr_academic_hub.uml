@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>DATABASE</ID>
+  <OriginalElement>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.DATABASE:academic_hub</OriginalElement>
+  <nodes>
+    <node x="-61.06798116833164" y="613.6418752952353">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.academic_period</node>
+    <node x="467.8531744811671" y="270.2668456886229">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.program</node>
+    <node x="1305.4283935434285" y="665.0878045804011">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book_library</node>
+    <node x="1036.4033205226747" y="677.0878045804011">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.publisher</node>
+    <node x="1326.4283935434285" y="820.1871994759438">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book_topic</node>
+    <node x="1561.4283935434285" y="677.0878045804011">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.library</node>
+    <node x="1561.4283935434285" y="949.7865943714863">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.author</node>
+    <node x="197.14259665641777" y="661.7411104456382">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.class_group</node>
+    <node x="-141.06798116833164" y="246.26684568862288">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.attendance</node>
+    <node x="731.3782475019209" y="412.24143764761766">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.general_dt.general_user</node>
+    <node x="1033.4033205226747" y="795.6871994759438">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book</node>
+    <node x="-46.06798116833164" y="759.8668456886229">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.subject</node>
+    <node x="201.64259665641777" y="77.29181608201047">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.exam_type</node>
+    <node x="1326.4283935434285" y="950.2865943714862">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book_author</node>
+    <node x="1014.9033205226747" y="460.7414376476176">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.academic_member</node>
+    <node x="449.3531744811672" y="649.7411104456382">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.class_schedule</node>
+    <node x="201.64259665641777" y="897.2918160820105">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.instructor</node>
+    <node x="177.64259665641777" y="439.2418752952353">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.student_enrollment</node>
+    <node x="1285.4283935434285" y="412.2414376476176">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.loan</node>
+    <node x="467.8531744811671" y="448.24143764761766">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.student</node>
+    <node x="1561.4283935434285" y="819.6871994759438">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.topic</node>
+    <node x="467.8531744811671" y="138.9410373715982">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.school</node>
+    <node x="166.64259665641777" y="222.26684568862288">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.grades</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.class_group" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.academic_period" relationship="REFERENCES">
+      <point x="-79.5" y="-60.5" />
+      <point x="90.0" y="11.599235150402933" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.student" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.program" relationship="REFERENCES">
+      <point x="0.0" y="-44.0" />
+      <point x="0.0" y="56.0" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.class_group" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.instructor" relationship="REFERENCES">
+      <point x="0.0" y="68.0" />
+      <point x="0.0" y="-44.0" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.attendance" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.student_enrollment" relationship="REFERENCES">
+      <point x="-1.883166835625616E-5" y="68.00015431137712" />
+      <point x="-31.067999999999998" y="420.0" />
+      <point x="276.643" y="420.0" />
+      <point x="4.033435822066167E-4" y="-67.99987529523526" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.publisher" relationship="REFERENCES">
+      <point x="0.0" y="-68.0" />
+      <point x="0.0" y="44.0" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.class_group" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.subject" relationship="REFERENCES">
+      <point x="-79.5" y="60.5" />
+      <point x="75.0" y="-13.62573524298466" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.loan" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book_library" relationship="REFERENCES">
+      <point x="0.0" y="80.00000000000006" />
+      <point x="0.0" y="-56.0" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book_author" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.author" relationship="REFERENCES">
+      <point x="71.0" y="1.1368683772161603E-13" />
+      <point x="-75.0" y="0.0" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.student_enrollment" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.class_group" relationship="REFERENCES">
+      <point x="4.033435822066167E-4" y="68.00012470476469" />
+      <point x="4.033435822066167E-4" y="-68.00011044563826" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book_library" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.library" relationship="REFERENCES">
+      <point x="86.5" y="0.0" />
+      <point x="-75.0" y="0.0" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book_library" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book" relationship="REFERENCES">
+      <point x="-3.935434283448558E-4" y="56.00019541959887" />
+      <point x="1391.928" y="799.0" />
+      <point x="1308.928" y="799.0" />
+      <point x="1308.928" y="863.687" />
+      <point x="77.99967947732534" y="-1.9947594375935296E-4" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.student_enrollment" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.student" relationship="REFERENCES">
+      <point x="99.0" y="-15.000437647617616" />
+      <point x="-75.0" y="0.0" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.student" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.general_dt.general_user" relationship="REFERENCES">
+      <point x="74.99982551883284" y="-4.376476176730648E-4" />
+      <point x="-85.00024750192085" y="-4.376476176730648E-4" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.program" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.school" relationship="REFERENCES">
+      <point x="0.0" y="-56.0" />
+      <point x="0.0" y="44.0" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book_topic" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book" relationship="REFERENCES">
+      <point x="-3.935434283448558E-4" y="-43.50019947594376" />
+      <point x="1391.928" y="799.0" />
+      <point x="1308.928" y="799.0" />
+      <point x="1308.928" y="863.687" />
+      <point x="77.99967947732534" y="-1.9947594375935296E-4" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.grades" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.student_enrollment" relationship="REFERENCES">
+      <point x="4.033435822066167E-4" y="80.00015431137712" />
+      <point x="4.033435822066167E-4" y="-67.99987529523526" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book_author" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book" relationship="REFERENCES">
+      <point x="-17.6283935434285" y="-33.586594371486285" />
+      <point x="1379.8" y="928.736896923715" />
+      <point x="1308.928" y="928.736896923715" />
+      <point x="1308.928" y="863.687" />
+      <point x="77.99967947732534" y="-1.9947594375935296E-4" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.loan" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.academic_member" relationship="REFERENCES">
+      <point x="-106.5" y="0.0" />
+      <point x="96.5" y="0.0" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book_topic" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.topic" relationship="REFERENCES">
+      <point x="65.5" y="0.0" />
+      <point x="-75.0" y="0.0" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.class_schedule" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.class_group" relationship="REFERENCES">
+      <point x="-1.74481167164231E-4" y="-80.00011044563826" />
+      <point x="542.853" y="613.0" />
+      <point x="276.643" y="613.0" />
+      <point x="4.033435822066167E-4" y="-68.00011044563826" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.academic_member" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.general_dt.general_user" relationship="REFERENCES">
+      <point x="-96.5" y="5.6843418860808015E-14" />
+      <point x="85.0" y="0.0" />
+    </edge>
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.grades" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.exam_type" relationship="REFERENCES">
+      <point x="0.0" y="-80.0" />
+      <point x="0.0" y="44.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Compact" zoom="1.25" showDependencies="false" x="744.2" y="679.0" />
+  <SelectedNodes>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.subject</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.class_schedule</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.attendance</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.grades</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book_author</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.author</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.academic_period</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book_library</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.class_group</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.general_dt.general_user</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.academic_member</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.instructor</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.exam_type</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.program</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book_topic</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.school</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.loan</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.library</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.student</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.topic</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.student_enrollment</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.publisher</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Columns</Category>
+    <Category>Comments</Category>
+    <Category>Key columns</Category>
+    <Category>Virtual foreign keys</Category>
+  </Categories>
+</Diagram>
+

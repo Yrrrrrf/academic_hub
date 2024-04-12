@@ -1,6 +1,27 @@
 -- Create the database structure for the library database
 -- This script creates the tables and relationships for the library database.
 
+
+
+
+-- COMMON TABLES -----------------------------------------------------------------------------------------------------
+
+-- Table: general_user (Common table for all systems)
+-- todo: Add additional fields as needed for each system
+-- todo: Add some constrains for email & role...
+DROP TABLE IF EXISTS general_dt.general_user CASCADE;
+CREATE TABLE IF NOT EXISTS general_dt.general_user (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  user_type VARCHAR(50) NOT NULL DEFAULT 'Student', -- Sets "Student" as the default user_type
+  -- email VARCHAR(255) UNIQUE NOT NULL, -- Temporarily commented out as requested
+  additional_info JSONB
+  -- role VARCHAR(255) NOT NULL -- Additional column to specify if the member is a student, faculty, staff, etc.
+);
+
+
+
+
 -- LIBRARY MANAGEMENT SYSTEM -------------------------------------------------------------------------------------------
 
 -- Table: author
@@ -66,11 +87,12 @@ CREATE TABLE library_management.book_library (
 
 -- Table: academic_member
 DROP TABLE IF EXISTS library_management.academic_member CASCADE;
-CREATE TABLE library_management.academic_member (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL
---   role VARCHAR(255) NOT NULL -- Additional column to specify if the member is a student, faculty, staff, etc.
+-- Academic Member Table with reference to GeneralUser
+CREATE TABLE IF NOT EXISTS library_management.academic_member (
+  id INTEGER PRIMARY KEY REFERENCES general_dt.general_user(id)
+  -- Additional fields specific to library management system
 );
+
 
 -- Table: loan
 DROP TABLE IF EXISTS library_management.loan CASCADE;
@@ -82,12 +104,115 @@ CREATE TABLE library_management.loan (
   return_date DATE
 );
 
--- Insert statements are omitted for brevity. Use similar INSERT INTO statements as in the original script.
 
 
--- SCHOOL MANAGEMENT SYSTEM --------------------------------------------------------------------------------------------
+
+--? SCHOOL MANAGEMENT SYSTEM --------------------------------------------------------------------------------------------
 
 
--- Table: student
 
+
+--^  Create the database structure for the school management system
+
+-- Table: School
+DROP TABLE IF EXISTS school_management.school CASCADE;
+CREATE TABLE school_management.school (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL
+);
+
+-- Table: Program
+DROP TABLE IF EXISTS school_management.program CASCADE;
+CREATE TABLE school_management.program (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  school_id INTEGER NOT NULL REFERENCES school_management.school(id)
+);
+
+-- Table: Student
+DROP TABLE IF EXISTS school_management.student CASCADE;
+-- Student Table with reference to GeneralUser
+CREATE TABLE IF NOT EXISTS school_management.student (
+  id INTEGER PRIMARY KEY REFERENCES general_dt.general_user(id),
+  program_id INTEGER NOT NULL REFERENCES school_management.program(id)
+  -- Other student-specific fields
+);
+
+-- Table: Instructor
+DROP TABLE IF EXISTS school_management.instructor CASCADE;
+CREATE TABLE school_management.instructor (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL
+);
+
+-- Table: Subject
+DROP TABLE IF EXISTS school_management.subject CASCADE;
+CREATE TABLE school_management.subject (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL
+);
+
+-- Table: AcademicPeriod
+DROP TABLE IF EXISTS school_management.academic_period CASCADE;
+CREATE TABLE school_management.academic_period (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL
+);
+
+-- Table: ClassGroup
+DROP TABLE IF EXISTS school_management.class_group CASCADE;
+CREATE TABLE school_management.class_group (
+  id SERIAL PRIMARY KEY,
+  instructor_id INTEGER NOT NULL REFERENCES school_management.instructor(id),
+  subject_id INTEGER NOT NULL REFERENCES school_management.subject(id),
+  period_id INTEGER NOT NULL REFERENCES school_management.academic_period(id)
+);
+
+-- Table: StudentEnrollment
+DROP TABLE IF EXISTS school_management.student_enrollment CASCADE;
+CREATE TABLE school_management.student_enrollment (
+  id SERIAL PRIMARY KEY,
+  student_id INTEGER NOT NULL REFERENCES school_management.student(id),
+  class_group_id INTEGER NOT NULL REFERENCES school_management.class_group(id),
+  enrollment_date DATE NOT NULL
+);
+
+-- Table: ExamType
+DROP TABLE IF EXISTS school_management.exam_type CASCADE;
+CREATE TABLE school_management.exam_type (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL
+);
+
+-- Table: Grades
+DROP TABLE IF EXISTS school_management.grades CASCADE;
+CREATE TABLE school_management.grades (
+  id SERIAL PRIMARY KEY,
+  student_enrollment_id INTEGER NOT NULL REFERENCES school_management.student_enrollment(id),
+  exam_type_id INTEGER NOT NULL REFERENCES school_management.exam_type(id),
+  grade DECIMAL NOT NULL,
+  grading_date DATE NOT NULL
+);
+
+-- Additional tables such as Attendance and ClassSchedule need to be defined further.
+-- Assuming basic columns for demonstration:
+
+-- Table: Attendance
+DROP TABLE IF EXISTS school_management.attendance CASCADE;
+CREATE TABLE school_management.attendance (
+  id SERIAL PRIMARY KEY,
+  student_enrollment_id INTEGER NOT NULL REFERENCES school_management.student_enrollment(id),
+  date DATE NOT NULL,
+  status VARCHAR(10) NOT NULL -- e.g., "Present", "Absent", "Excused"
+);
+
+-- Table: ClassSchedule
+DROP TABLE IF EXISTS school_management.class_schedule CASCADE;
+CREATE TABLE school_management.class_schedule (
+  id SERIAL PRIMARY KEY,
+  class_group_id INTEGER NOT NULL REFERENCES school_management.class_group(id),
+  day_of_week VARCHAR(10) NOT NULL, -- e.g., "Monday", "Tuesday"
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL
+);
 

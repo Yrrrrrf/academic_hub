@@ -14,7 +14,7 @@ Academic Hub is a comprehensive platform designed to manage academic resources a
 ### Prerequisites
 
 - Install the [PostgreSQL](https://www.postgresql.org/download/) database server and used files inside the [sql](./sql) folder to create the database schema and populate it with sample data.
-
+![db entity relationship diagram](./assets/static/db_erd.png)
 
 - Use the latest version of [Python](https://www.python.org/downloads/).
 - Install the required packages using the following command:
@@ -27,12 +27,15 @@ mamba install --file requirements.txt  # using mamba
 ```
 - Configure the database connection creating the [.env](./.env) file with the following content:
 
-
 ```bash
 DB_NAME = "database_name"  # the name of the database to connect to
-USER = "database_user"  # the user to connect to the database
-PASSWORD = "user_password"  # the password for the user 
-HOST = "localhost"  # the host where the database is running (default: localhost)
+HOST = "localhost"  # the host of the database
+
+LIBRARY_USER = "library_user"  # the user for the library
+LIBRARY_PSWD = "some_password"  # the password for the library user
+SCHOOL_USER = "school_user"  # the user for the school
+SCHOOL_PSWD = "somw_password"  # the password for the school user
+
 ```
 ## [License](./LICENSE)
 

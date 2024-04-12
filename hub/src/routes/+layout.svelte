@@ -1,6 +1,6 @@
 <script>
 	import Header from './Header.svelte';
-	import './styles.css';
+	import './../app.css';
 </script>
 
 <div class="app">
@@ -10,9 +10,12 @@
 		<slot />
 	</main>
 
-	<footer>
-		<p>Check <a href="https://github.com/Yrrrrrf/academic_hub/tree/main/hub" target="_blank">source code</a> on GitHub</p>
+
+	<footer class="flex flex-col justify-center items-center p-3">
+		<p>Check <a href="http://github.com/Yrrrrrf/academic_hub/tree/main/hub" target="_blank">source code</a> on GitHub</p>
 	</footer>
+
+
 </div>
 
 <style>
@@ -31,18 +34,6 @@
 		max-width: 64rem;
 		margin: 0 auto;
 		box-sizing: border-box;
-	}
-
-	footer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 12px;
-	}
-
-	footer a {
-		font-weight: bold;
 	}
 
 	@media (min-width: 480px) {

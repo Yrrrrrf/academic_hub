@@ -1,13 +1,10 @@
-<!-- School.svelte -->
-
+<!-- School Management System -->
 <script>
     // You can import any necessary scripts or data here
 </script>
 
 <main>
-    <div class="container">
-        <h1>School</h1>
-    </div>
+    <div class="container"><h1>School</h1></div>
 </main>
 
 <style>
