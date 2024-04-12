@@ -7,7 +7,7 @@
 
 [//]: # ([<img alt="documentation" src="https://img.shields.io/badge/documentation-100%25-66c2a5?style=for-the-badge&logo=read-the-docs&labelColor=555555" height="24">]&#40;#documentation-section&#41;)
 
-Academic Hub is a comprehensive platform designed to manage academic resources and data, including library inventory, academic user information (students, teachers, etc.), grades history, and more. The system is built on a relational database, supporting various academic operations and providing detailed reports for educational institutions.
+Academic Hub is a comprehensive platform designed to manage academic resources and data, including library inventory, academic user information (students, teachers, etc.), grade history, and more. The system is built on a relational database, supporting various academic operations and providing detailed reports for educational institutions.
 
 ## Setup
 

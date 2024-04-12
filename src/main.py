@@ -28,7 +28,7 @@ def setup(api_app: FastAPI) -> None:
     api_app.license_info = {"name": "MIT", "url": "https://choosealicense.com/licenses/mit/"}
 
     app.add_middleware(
-        CORSMiddleware,
+        CORSMiddleware,  # * Add the CORS middleware to the application
         allow_origins=[  # * Define a list of allowed origins (the domains your frontend is served from)
             "http://localhost:8080",  #  *Add the origin for Svelte app here
         ],
@@ -46,25 +46,22 @@ setup(app)  # Setup the application data
 # Add routes for the home page
 app.include_router(home.home)
 
-# Add routes for the library model
-app.include_router(library.basic_dt)
-app.include_router(library.by_attr)
-# app.include_router(library_routes.views)
+# # Add routes for the library model
+# app.include_router(library.basic_dt)
+# app.include_router(library.by_attr)
+# app.include_router(library.views)
+# app.include_router(library.views, prefix="/lib")
 
-# Add routes for the school model
+# # Add routes for the school model
 app.include_router(school.basic_dt)
 app.include_router(school.by_attr)
-# app.include_router(school_routes.views)
+# app.include_router(school.views)
+app.include_router(school.views, prefix="/school")
 
 
 # * check if this is viable or not
-# app.include_router(library_routes.library_views, prefix="/lib")
-# app.include_router(school_routes.school_views, prefix="/school")
 
-
-
-
-# define the main function (entry point) for the FastAPI application
+# Define the main function (entry point) for the FastAPI application
 # in case we want to run the application using the command `python src/main.py`
 # otherwise, we can use: `uvicorn src.main:app --reload --host 127.0.0.1 --port 8000`
 

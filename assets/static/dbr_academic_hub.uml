@@ -25,7 +25,7 @@
     <node x="467.8531744811671" y="448.24143764761766">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.student</node>
     <node x="1561.4283935434285" y="819.6871994759438">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.topic</node>
     <node x="467.8531744811671" y="138.9410373715982">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.school</node>
-    <node x="166.64259665641777" y="222.26684568862288">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.grades</node>
+    <node x="166.64259665641777" y="222.26684568862288">92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.grade</node>
   </nodes>
   <notes />
   <edges>
@@ -97,7 +97,7 @@
       <point x="1308.928" y="863.687" />
       <point x="77.99967947732534" y="-1.9947594375935296E-4" />
     </edge>
-    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.grades" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.student_enrollment" relationship="REFERENCES">
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.grade" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.student_enrollment" relationship="REFERENCES">
       <point x="4.033435822066167E-4" y="80.00015431137712" />
       <point x="4.033435822066167E-4" y="-67.99987529523526" />
     </edge>
@@ -126,7 +126,7 @@
       <point x="-96.5" y="5.6843418860808015E-14" />
       <point x="85.0" y="0.0" />
     </edge>
-    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.grades" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.exam_type" relationship="REFERENCES">
+    <edge source="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.grade" target="92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.exam_type" relationship="REFERENCES">
       <point x="0.0" y="-80.0" />
       <point x="0.0" y="44.0" />
     </edge>
@@ -136,7 +136,7 @@
     <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.subject</node>
     <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.class_schedule</node>
     <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.attendance</node>
-    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.grades</node>
+    <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.grade</node>
     <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.book_author</node>
     <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.library_management.author</node>
     <node>92f6beb7-9e4f-4a5e-a795-417ca150ce0b.TABLE:academic_hub.school_management.academic_period</node>
