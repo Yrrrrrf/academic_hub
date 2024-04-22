@@ -28,6 +28,8 @@ ALTER SEQUENCE general_dt.general_user_id_seq RESTART WITH 1;
 
 
 
+-- DELETE SEQUENCES
+
 -- Delete all the tables of the library_management schema
 DELETE FROM library_management.loan;
 DELETE FROM library_management.book_library;
@@ -56,6 +58,8 @@ DELETE FROM school_management.subject;
 
 -- delete all the tables of the general_dt schema
 DELETE FROM general_dt.general_user;
+
+
 
 
 -- ? COMMON TABLES -----------------------------------------------------------------------------------------------------

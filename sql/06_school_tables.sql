@@ -92,12 +92,20 @@ CREATE TABLE school_management.attendance (
   status VARCHAR(10) NOT NULL -- e.g., "Present", "Absent", "Excused"
 );
 
+-- Table: Classroom
+DROP TABLE IF EXISTS school_management.classroom CASCADE;
+CREATE TABLE school_management.classroom (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE
+);
+
 -- Table: ClassSchedule
 DROP TABLE IF EXISTS school_management.class_schedule CASCADE;
 CREATE TABLE school_management.class_schedule (
   id SERIAL PRIMARY KEY,
   class_group_id INTEGER NOT NULL REFERENCES school_management.class_group(id),
-  day_of_week VARCHAR(10) NOT NULL, -- e.g., "Monday", "Tuesday"
+  classroom_id INTEGER NOT NULL REFERENCES school_management.classroom(id),
+  day_of_week VARCHAR(10) NOT NULL, -- e.g., "Monday", "Tuesday" (9 characters max (Saturday))
   start_time TIME NOT NULL,
   end_time TIME NOT NULL
 );

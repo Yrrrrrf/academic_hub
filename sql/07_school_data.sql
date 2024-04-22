@@ -1,3 +1,4 @@
+GRANT USAGE, SELECT, UPDATE ON SEQUENCE school_management.school_id_seq TO school_admin;
 
 
 
@@ -12,19 +13,18 @@ INSERT INTO school_management.school (name) VALUES
 ;
 
 INSERT INTO school_management.program (name, school_id) VALUES
---     Engineering Programs
+-- Engineering Programs
     ('Computer Science', 1),  -- Assuming a school with ID = 1 exists
     ('Mechanical Engineering', 1),
     ('Industrial Engineering', 1),
     ('Artificial Intelligence', 1),
     ('Civil Engineering', 1),
---     Social Sciences Programs
+-- Social Sciences Programs
     ('Sociology', 1),
     ('Psychology', 1),
     ('Environmental Science', 1),
     ('Political Science', 1),
-
---     Economics Programs
+-- Economics Programs
     ('Economics', 1),
     ('Law', 1)
 ;
@@ -104,20 +104,29 @@ VALUES
     (1, '2021-01-05', 'Present')
 ;
 
-INSERT INTO school_management.class_schedule (class_group_id, day_of_week, start_time, end_time) VALUES
-    (1, 'Monday', '08:00', '10:00'),
-    (1, 'Wednesday', '08:00', '10:00'),
-    (1, 'Friday', '08:00', '10:00'),
-    (2, 'Monday', '10:00', '12:00'),
-    (2, 'Wednesday', '10:00', '12:00'),
-    (2, 'Friday', '10:00', '12:00'),
-    (3, 'Monday', '14:00', '16:00'),
-    (3, 'Wednesday', '14:00', '16:00'),
-    (3, 'Friday', '14:00', '16:00'),
-    (4, 'Tuesday', '08:00', '10:00'),
-    (4, 'Thursday', '08:00', '10:00'),
-    (4, 'Saturday', '08:00', '10:00'),
-    (5, 'Tuesday', '10:00', '12:00'),
-    (5, 'Thursday', '10:00', '12:00'),
-    (5, 'Saturday', '10:00', '12:00')
+INSERT INTO school_management.classroom (name) VALUES
+    ('A1'),
+    ('A2'),
+    ('A3'),
+    ('A4'),
+    ('A5'),
+    ('A6')
+;
+
+INSERT INTO school_management.class_schedule (class_group_id, classroom_id, day_of_week, start_time, end_time) VALUES
+    (1, 1, 'Monday', '08:00', '10:00'),
+    (1, 1, 'Wednesday', '08:00', '10:00'),
+    (1, 2, 'Friday', '08:00', '10:00'),
+    (2, 2, 'Monday', '10:00', '12:00'),
+    (2, 3, 'Wednesday', '10:00', '12:00'),
+    (2, 3, 'Friday', '10:00', '12:00'),
+    (3, 4, 'Monday', '14:00', '16:00'),
+    (3, 4, 'Wednesday', '14:00', '16:00'),
+    (3, 4, 'Friday', '14:00', '16:00'),
+    (4, 5, 'Tuesday', '08:00', '10:00'),
+    (4, 5, 'Thursday', '08:00', '10:00'),
+    (4, 5, 'Saturday', '08:00', '10:00'),
+    (5, 6, 'Tuesday', '10:00', '12:00'),
+    (5, 6, 'Thursday', '10:00', '12:00'),
+    (5, 6, 'Saturday', '10:00', '12:00')
 ;

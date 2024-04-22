@@ -20,3 +20,9 @@ This route contains the main methods that will be used to display the home page 
 @home.get("/", tags=["home"])
 def read_root():
     return {"Hello From": "Home Route"}
+
+
+
+@home.get("/penchs", tags=["home"])
+def read_root():
+    return {"Pench's": "Hola Amix"}

@@ -78,13 +78,13 @@ def setup_routes(api_app: FastAPI) -> None:
     # # api_app.include_router(general.all)
     # # api_app.include_router(general.auth)
 
-    # # api_app.include_router(library.basic_dt)
-    # # api_app.include_router(library.by_attr)
+    # api_app.include_router(library.basic_dt)
+    # api_app.include_router(library.by_attr)
     # # api_app.include_router(library.views)
     # # api_app.include_router(library.all)
 
     api_app.include_router(school.basic_dt)
-    # api_app.include_router(school.by_attr)
+    api_app.include_router(school.by_attr)
     # # api_app.include_router(school.views)
     # # api_app.include_router(school.all)
 

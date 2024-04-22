@@ -7,7 +7,6 @@ by_attr: APIRouter = APIRouter()
 views: APIRouter = APIRouter()
 
 
-
 for t_type in general_classes:
     # * post (create)
 
