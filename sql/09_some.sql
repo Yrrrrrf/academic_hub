@@ -7,3 +7,6 @@
 -- (3..=5)  library management
 -- (6..=8)  school management
 -- (9..)    other systems...
+
+-- This are some ideas for new systems:
+-- check the "ideas" file for more information
