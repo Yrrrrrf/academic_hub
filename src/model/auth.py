@@ -6,9 +6,8 @@
     This to make them able to access the application.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.orm import Session
 from jwt import encode, decode
 
 

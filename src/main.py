@@ -37,37 +37,13 @@ app.add_middleware(  # Add CORS middleware
 )
 
 
-# ? Test the Auth route...
-# * Improve the security by adding a token to the login route to authenticate the user & authorize them to access the application.
-from src.model.auth import create_token, DEFAULT_USER, JWTBearer
-from pydantic import BaseModel
-
-
-
-
-
-
-
-@app.post("/token", tags=["Auth"])
-def get_test_token():
-    # return JSONResponse(content={"token": create_token(DEFAULT_USER)})
-    return {"access_token": create_token(DEFAULT_USER)}
-
-# * Example of a protected route
-@app.get("/protected", dependencies=[Depends(JWTBearer())])
-def protected_route():
-    return {"message": "You are viewing a protected route"}
-
-
-
-
-
-
 # * Create routes
-app.include_router(home)  # * main routes for the application...
-app.include_router(basic_dt)
-# app.include_router(crud_attr)
+app.include_router(home)  # * main routes for the application (home, about, contact, help, etc.)
+app.include_router(auth)  # * authentication routes (login, logout, etc.)
+app.include_router(basic_dt)  # * data table (GET columns & all resources)
+app.include_router(crud_attr)
 # app.include_router(views, prefix="/views")
+
 
 
 # * Run the application
