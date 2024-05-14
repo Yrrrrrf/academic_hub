@@ -24,6 +24,7 @@ class UserType(Enum):
     LIBRARY = "library"
     SCHOOL = "school"
 
+
 def _session_factory(user_type: str) -> sessionmaker:
     """
         Creates a sessionmaker for the specified user type.
@@ -69,10 +70,10 @@ def get_db_library():
 
 # def _set_db_factory(user_type: UserType) -> Callable:
 #     pass
-#     # todo: CHeck why this doesn't work... it should work, right?
-#     # get_db_school = get_db(UserType.SCHOOL)  # this works because the lambda function calls the generator function
-#     # get_db_library = lambda: get_db(UserType.LIBRARY)  # this works because the lambda function calls the generator function
-#     # get_db_general = lambda: get_db(UserType.GENERAL)  # this works because the lambda function calls the generator function
+    # todo: CHeck why this doesn't work... it should work, right?
+    # get_db_school = get_db(UserType.SCHOOL)  # this works because the lambda function calls the generator function
+    # get_db_library = lambda: get_db(UserType.LIBRARY)  # this works because the lambda function calls the generator function
+    # get_db_general = lambda: get_db(UserType.GENERAL)  # this works because the lambda function calls the generator function
 
 
 Base = declarative_base()

@@ -1,19 +1,11 @@
 -- Create the database structure for the library database
 -- This script creates the tables and relationships for the library database.
 
-
 -- ? LIBRARY MANAGEMENT SYSTEM -------------------------------------------------------------------------------------------
 
 -- Table: author
 DROP TABLE IF EXISTS library_management.author CASCADE;
 CREATE TABLE library_management.author (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL
-);
-
--- Table: library
-DROP TABLE IF EXISTS library_management.library CASCADE;
-CREATE TABLE library_management.library (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL
 );
@@ -62,23 +54,14 @@ DROP TABLE IF EXISTS library_management.book_library CASCADE;
 CREATE TABLE library_management.book_library (
   book_series_id SERIAL PRIMARY KEY,
   book_id INTEGER NOT NULL REFERENCES library_management.book(id),
-  library_id INTEGER NOT NULL REFERENCES library_management.library(id)
+  library_id INTEGER NOT NULL REFERENCES infrastructure_management.library(id)
 );
-
--- Table: academic_member
-DROP TABLE IF EXISTS library_management.academic_member CASCADE;
--- Academic Member Table with reference to GeneralUser
-CREATE TABLE IF NOT EXISTS library_management.academic_member (
-  id INTEGER PRIMARY KEY REFERENCES general_dt.general_user(id)
-  -- Additional fields specific to library management system
-);
-
 
 -- Table: loan
 DROP TABLE IF EXISTS library_management.loan CASCADE;
 CREATE TABLE library_management.loan (
   id SERIAL PRIMARY KEY,
-  academic_member_id INTEGER NOT NULL REFERENCES library_management.academic_member(id),
+  academic_member_id INTEGER NOT NULL REFERENCES school_management.student(id),
   book_library_id INTEGER REFERENCES library_management.book_library(book_series_id),
   loan_date DATE,
   return_date DATE

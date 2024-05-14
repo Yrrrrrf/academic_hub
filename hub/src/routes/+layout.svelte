@@ -7,14 +7,12 @@
 	<Header />
 
 	<main>
-		<slot />
+		<slot />  <!-- This is where the content will be injected -->
 	</main>
 
-
-	<f4ooter class="flex flex-col justify-center items-center p-3">
-		<p>Check <a href="http://github.com/Yrrrrrf/academic_hub/tree/main/hub" target="_blank">source code</a> on GitHub</p>
-	</f4ooter>
-
+	<footer class="flex flex-col justify-center items-center p-3">
+		<p class="text-center">Check <a href="http://github.com/Yrrrrrf/academic_hub" target="_blank" class="text-blue-500">source code</a> on GitHub</p>
+	</footer>
 
 </div>
 
@@ -39,6 +37,8 @@
 	@media (min-width: 480px) {
 		footer {
 			padding: 12px 0;
-		}
+			}
 	}
+
+
 </style>

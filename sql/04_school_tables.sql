@@ -1,25 +1,18 @@
 --? SCHOOL MANAGEMENT SYSTEM --------------------------------------------------------------------------------------------
 
--- Table: School
-DROP TABLE IF EXISTS school_management.school CASCADE;
-CREATE TABLE school_management.school (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL
-);
-
 -- Table: Program
 DROP TABLE IF EXISTS school_management.program CASCADE;
 CREATE TABLE school_management.program (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
-  school_id INTEGER NOT NULL REFERENCES school_management.school(id)
+  school_id INTEGER NOT NULL REFERENCES infrastructure_management.faculty(id)
 );
 
 -- Table: Student
 DROP TABLE IF EXISTS school_management.student CASCADE;
 -- Student Table with reference to GeneralUser
 CREATE TABLE IF NOT EXISTS school_management.student (
-  id INTEGER PRIMARY KEY REFERENCES general_dt.general_user(id),
+  id INTEGER PRIMARY KEY REFERENCES auth.general_user(id),
   program_id INTEGER NOT NULL REFERENCES school_management.program(id)
   -- Other student-specific fields
 );
@@ -92,19 +85,12 @@ CREATE TABLE school_management.attendance (
   status VARCHAR(10) NOT NULL -- e.g., "Present", "Absent", "Excused"
 );
 
--- Table: Classroom
-DROP TABLE IF EXISTS school_management.classroom CASCADE;
-CREATE TABLE school_management.classroom (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL UNIQUE
-);
-
 -- Table: ClassSchedule
 DROP TABLE IF EXISTS school_management.class_schedule CASCADE;
 CREATE TABLE school_management.class_schedule (
   id SERIAL PRIMARY KEY,
   class_group_id INTEGER NOT NULL REFERENCES school_management.class_group(id),
-  classroom_id INTEGER NOT NULL REFERENCES school_management.classroom(id),
+  classroom_id INTEGER NOT NULL REFERENCES infrastructure_management.room_base(id),
   day_of_week VARCHAR(10) NOT NULL, -- e.g., "Monday", "Tuesday" (9 characters max (Saturday))
   start_time TIME NOT NULL,
   end_time TIME NOT NULL

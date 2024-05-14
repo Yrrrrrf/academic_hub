@@ -54,11 +54,9 @@ def _dt_routes(
         db_dependency (Callable): Dependency that provides a DB session.
         excluded_attributes (list[str]): List of attributes to exclude from CRUD operations.
     """
-    # @router.get(f"/{model.__tablename__.lower()}/dt/", tags=[model.__name__])  # Decorate the route function with the GET route for getting column names
     @router.get(f"/{model.__tablename__.lower()}/dt", tags=[model.__name__])
     def get_columns(): return [c.name for c in model.__table__.columns]  # Return a list of column names
 
-    # @router.get(f"/{model.__tablename__.lower()}s/", tags=[model.__name__], dependencies=[Depends(JWTBearer())])
     @router.get(f"/{model.__tablename__.lower()}s", tags=[model.__name__])  # Decorate the route function with the GET route for getting all resources
     def get_all(db: Session = Depends(db_dependency)): return db.query(model).all()  # Return a list of all resources
 
@@ -146,10 +144,10 @@ def _crud_routes(
     # * Create the CRUD routes for each included attribute
     included_attributes = [attr for attr in model.__table__.columns.keys() if attr not in excluded_attributes]  # Get a list of included attributes
 
-    # [_post_route(attr) for attr in included_attributes]     # * Create
-    _post_new_route()
-    # [_get_route(attr) for attr in included_attributes]      # * Read
-    [_get_route(attr) for attr in model.__table__.columns.keys()]  # * Read (with id included...)
+    # [_post_route(attr) for attr in included_attributes]     # Create (by attribute)
+    # [_get_route(attr) for attr in included_attributes]      # Read (by attribute)
+    _post_new_route()  # * Create (new resource with all attributes included)
+    [_get_route(attr) for attr in model.__table__.columns.keys()]  # * Read (with id comlumn included...)
     [_put_route(attr) for attr in included_attributes]      # * Update
     [_delete_route(attr) for attr in included_attributes]   # * Delete
 
@@ -187,46 +185,43 @@ for general_class in general_classes:
 #     _dt_routes(lib_class, basic_dt, get_db_library)  # this is available for any db user
 #     _crud_routes(lib_class, crud_attr, get_db_library)  # this is available for any db user
 
-for school_class in school_classes:
-    _dt_routes(school_class, basic_dt, get_db_school)  # this is available for any db user
-    _crud_routes(school_class, crud_attr, get_db_school)  # this is available for any db user
+# for school_class in school_classes:
+#     _dt_routes(school_class, basic_dt, get_db_school)  # this is available for any db user
+#     _crud_routes(school_class, crud_attr, get_db_school)  # this is available for any db user
 
 
 # * views_routes(views, get_db_school)
 # * views_routes(views, get_db_library)
 
 
+# ? TEST --------------------------------------------------------------------------------------
+
+# todo: CHECK THIS PYDANTIC STUFF
+# todo: TO ALLOW THE 'DYNCAMIC' CREATION OF ROUTES
+# todo: This means that the routes will be created based on the model's attributes
+# todo: It allow the creation of routes for any model without having to write the routes manually... (I think!... I'm not sure xd)
+
+# from pydantic import BaseModel
+# from src.model.school import School
 
 
-
-from pydantic import BaseModel
-from src.model.school import School
-
-
-class SchoolQueryParams(BaseModel):
-    name: Optional[str] = None
+# class SchoolQueryParams(BaseModel):
+#     name: Optional[str] = None
 
 
-@home.get("/schools/")
-# def read_schools(params: SchoolQueryParams = Depends(), db: Session = Depends(get_db)):
-def read_schools(params: SchoolQueryParams = Depends(), db: Session = Depends(get_db_school)):
-    query = db.query(School)
-    if params.name:
-        query = query.filter(School.name == params.name)
-    # if params.city:
-    #     query = query.filter(School.city == params.city)
-    return query.all()
+# @home.get("/school/new/")
+# # def read_schools(params: SchoolQueryParams = Depends(), db: Session = Depends(get_db)):
+# def read_schools(params: SchoolQueryParams = Depends(), db: Session = Depends(get_db_school)):
+#     query = db.query(School)
+#     if params.name:
+#         query = query.filter(School.name == params.name)
+#     print(query.all())
+#     # if params.city:
+#     #     query = query.filter(School.city == params.city)
+#     return query.all()
 
 
-
-
-
-
-
-
-
-
-
+# * Authentication Routes (test routes)
 
 @auth.post("/token", tags=["Auth"])
 def get_test_token():
@@ -235,3 +230,6 @@ def get_test_token():
 @auth.get("/protected", tags=["Auth"], dependencies=[Depends(JWTBearer())])
 def protected_route():
     return {"message": "You are viewing a protected route"}
+
+
+# todo: Find a better way to do this even better...
