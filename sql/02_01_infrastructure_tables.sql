@@ -1,10 +1,5 @@
--- 09_infrastructure_tables.sql
+-- 03_infrastructure_tables.sql
 -- Infrastructure Management Tables for Academic Hub
-
--- todo: maybe this is part of another `schema`? Some schema that stores information for the payroll system?
--- todo: maybe this is part of another `table`? A table that stores information about the faculty's schedule?
--- todo: think about another possible solution for this (maybe a separate table that stores the faculty's schedule)
-
 
 -- Table: Buildings
 -- Stores information about campus buildings
@@ -17,14 +12,14 @@ CREATE TABLE infrastructure_management.building (
     accessibility_features BOOLEAN DEFAULT false
 );
 
--- Room Types
+-- Table: Room Types
 DROP TABLE IF EXISTS infrastructure_management.room_type CASCADE;
 CREATE TABLE infrastructure_management.room_type (
     id SERIAL PRIMARY KEY,
     name VARCHAR(32) UNIQUE NOT NULL  -- e.g. classroom, laboratory, conference room, etc.
 );
 
--- Base Table: Rooms
+-- Table: Rooms
 -- Contains common attributes for all room types
 DROP TABLE IF EXISTS infrastructure_management.room_base CASCADE;
 CREATE TABLE infrastructure_management.room_base (

@@ -1,6 +1,3 @@
--- Create the database structure for the library database
--- This script creates the tables and relationships for the library database.
-
 -- ? LIBRARY MANAGEMENT SYSTEM -------------------------------------------------------------------------------------------
 
 -- Table: author

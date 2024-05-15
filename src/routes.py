@@ -2,11 +2,12 @@
 from fastapi import Depends, HTTPException, APIRouter
 
 # stdlib imports
-from typing import Optional, Type, Callable
+from typing import Type, Callable
 
 # local imports
 from src.model.auth import JWTBearer, create_token, DEFAULT_USER
-from src.model.general import *
+from src.model.infrastructure import *
+# from src.model.general import *
 from src.model.library import *
 from src.model.school import *
 from src.database import *
@@ -24,11 +25,11 @@ This route contains the main methods that will be used to display the home page 
 - Get the contact page
 - Get the help page
 """
-
 auth: APIRouter = APIRouter()  # for authentication routes
 basic_dt: APIRouter = APIRouter()  # for data table routes
 crud_attr: APIRouter = APIRouter()  # crud routes for each attribute
 views: APIRouter = APIRouter()  # todo: views routes... for views xd
+
 
 
 
@@ -176,10 +177,13 @@ def _views_routes(
             )
         return view  # Return the view data
 
+    # todo: SET THE AUTH FOR EACH USER (ADMIN or USER)
+    # todo: ADMIN must be able to see all the tables for his schema (FOR EACH SCHEMA)
+    # todo: USER can just see the data associated to him (school & library) 
 
-for general_class in general_classes:
-    _dt_routes(general_class, basic_dt, get_db_school)  # this is available for any db user
-    _crud_routes(general_class, crud_attr, get_db_school)  # this is available for any db user
+# for general_class in general_classes:
+#     _dt_routes(general_class, basic_dt, get_db_school)  # this is available for any db user
+#     _crud_routes(general_class, crud_attr, get_db_school)  # this is available for any db user
 
 # for lib_class in lib_classes:
 #     _dt_routes(lib_class, basic_dt, get_db_library)  # this is available for any db user
@@ -188,7 +192,6 @@ for general_class in general_classes:
 # for school_class in school_classes:
 #     _dt_routes(school_class, basic_dt, get_db_school)  # this is available for any db user
 #     _crud_routes(school_class, crud_attr, get_db_school)  # this is available for any db user
-
 
 # * views_routes(views, get_db_school)
 # * views_routes(views, get_db_library)
@@ -230,6 +233,5 @@ def get_test_token():
 @auth.get("/protected", tags=["Auth"], dependencies=[Depends(JWTBearer())])
 def protected_route():
     return {"message": "You are viewing a protected route"}
-
 
 # todo: Find a better way to do this even better...
