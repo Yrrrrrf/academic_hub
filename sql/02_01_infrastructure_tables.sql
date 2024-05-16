@@ -24,9 +24,9 @@ CREATE TABLE infrastructure_management.room_type (
 DROP TABLE IF EXISTS infrastructure_management.room_base CASCADE;
 CREATE TABLE infrastructure_management.room_base (
     id SERIAL PRIMARY KEY,
-    building_id INTEGER NOT NULL REFERENCES infrastructure_management.building(id),
     room_type INTEGER NOT NULL REFERENCES infrastructure_management.room_type(id),
-    room_number VARCHAR(32),  -- Identifier for the room (e.g. 101, 102, 103, etc.)
+    name VARCHAR(32),  -- Identifier for the room (e.g. 101, 102, 103, etc.)
+    building_id INTEGER NOT NULL REFERENCES infrastructure_management.building(id),
     capacity INT,
     equipment_details JSONB
 );

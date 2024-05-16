@@ -1,6 +1,41 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Time, Numeric
-from src.database import base_model
+# from pydantic import BaseModel
+# from typing import Optional
 
 
-SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='infrastructure_management')
+# class BuildingBase(BaseModel):
+#     name: str
+#     address: Optional[str] = None
+#     total_floors: Optional[int] = None
+#     accessibility_features: Optional[bool] = False
+
+# class BuildingCreate(BuildingBase):
+#     pass
+
+# class BuildingUpdate(BuildingBase):
+#     pass
+
+# class BuildingInDB(BuildingBase):
+#     id: int
+
+#     class Config:
+#         orm_mode = True
+
+
+
+
+# from sqlalchemy import Column, Integer, String, Boolean, Text
+# from sqlalchemy.ext.declarative import declarative_base
+
+# Base = declarative_base()
+
+
+# class Building(Base):
+#     __tablename__ = 'building'
+#     __table_args__ = {'schema': 'infrastructure_management'}
+    
+#     id = Column(Integer, primary_key=True, index=True)
+#     name = Column(String(255), nullable=False)
+#     address = Column(Text)
+#     total_floors = Column(Integer)
+#     accessibility_features = Column(Boolean, default=False)
 

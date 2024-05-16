@@ -58,7 +58,7 @@ CREATE TABLE library_management.book_library (
 DROP TABLE IF EXISTS library_management.loan CASCADE;
 CREATE TABLE library_management.loan (
   id SERIAL PRIMARY KEY,
-  academic_member_id INTEGER NOT NULL REFERENCES school_management.student(id),
+  student_id INTEGER NOT NULL REFERENCES school_management.student(id),
   book_library_id INTEGER REFERENCES library_management.book_library(book_series_id),
   loan_date DATE,
   return_date DATE

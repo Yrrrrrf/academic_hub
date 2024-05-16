@@ -1,16 +1,3 @@
-GRANT USAGE, SELECT, UPDATE ON SEQUENCE school_management.school_id_seq TO school_admin;
-
-
-
-
-
-INSERT INTO school_management.school (name) VALUES
-    ('Universidad Autónoma del Estado de México'),
-    ('Universidad Nacional Autónoma de México'),
-    ('Instituto Politécnico Nacional'),
-    ('Universidad Autónoma Metropolitana'),
-    ('Universidad Autónoma de Chapingo')
-;
 
 INSERT INTO school_management.program (name, school_id) VALUES
 -- Engineering Programs
@@ -27,6 +14,20 @@ INSERT INTO school_management.program (name, school_id) VALUES
 -- Economics Programs
     ('Economics', 1),
     ('Law', 1)
+;
+
+INSERT INTO auth.general_user (name, email, password_hash) VALUES
+    -- my name...
+    ('Fernando Reza', 'frezac001@alumno.uaemex.mx', 'some_generic_password'),
+    -- test data
+    ('Jorge López', 'jlopec@alumno.uaemex.mx', 'some_generic_password'),
+    ('Carmen González', 'cgonzl@alumno.uaemex.mx', 'some_generic_password'),
+    ('Luis López', 'llopev@alumno.uaemex.mx', 'some_generic_password'),
+    ('Erick Lara', 'elaraw@alumno.uaemex.mx', 'some_generic_password'),
+    ('Juan Fuentes', 'jfueno@alumno.uaemex.mx', 'some_generic_password'),
+    -- some additional test data
+    ('Juan Pérez', 'jperezd@001@alumno.uaemex.mx', 'some_generic_password'),
+    ('María González', 'mgonzp001@alumno.uaemex.mx', 'some_generic_password')
 ;
 
 INSERT INTO school_management.student (id, program_id) VALUES
@@ -102,15 +103,6 @@ VALUES
     (1, '2021-01-03', 'Present'),
     (1, '2021-01-04', 'Present'),
     (1, '2021-01-05', 'Present')
-;
-
-INSERT INTO school_management.classroom (name) VALUES
-    ('A1'),
-    ('A2'),
-    ('A3'),
-    ('A4'),
-    ('A5'),
-    ('A6')
 ;
 
 INSERT INTO school_management.class_schedule (class_group_id, classroom_id, day_of_week, start_time, end_time) VALUES

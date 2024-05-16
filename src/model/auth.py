@@ -16,10 +16,6 @@ from src.database import *
 SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='auth')
 
 
-# INSERT INTO auth.general_user (name, email, password_hash, additional_info)
-# VALUES ('some-new-admin', 'admin@localhost', 'some_admin_password', '{"role": "ADMIN"}');
-
-
 class GeneralUser(NamedBaseModel):
     # id & name are inherited from NamedBaseModel
     email = Column(String(255), index=True, nullable=False, unique=True)
@@ -29,6 +25,8 @@ class GeneralUser(NamedBaseModel):
 
 
 auth_classes: list = [obj for _, obj in globals().items() if isinstance(obj, type) and obj.__module__ == __name__]
+
+
 
 
 from fastapi import HTTPException, Request

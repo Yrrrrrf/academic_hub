@@ -1,4 +1,29 @@
-# AcademicHub API Schema Ideas
+# AcademicHub API Database Layout
+
+### File Organization
+
+#### Execution Order
+
+- $00\_*$  Create the database
+- $01\_*$  Declare **schemas**
+- $02\_*$  Declare **tables** for each schema
+- $03\_*$  Add some **views** for each schema
+- $04\_*$  Add some **test data**
+
+#### Schema Organization (in order of execution)
+
+- $*\_01\_auth\_*$ **Auth** related files
+- $*\_02\_infrastructure\_*$ **Infrastructure** related files
+- $*\_03\_school\_*$ **School** related files
+- $*\_04\_lib\_*$ **Library** related files
+
+
+## Current Schema
+
+![Current Schema](/assets/static/db_erd.png)
+
+
+## Schema Ideas
 
 This document outlines potential schema ideas for the AcademicHub API.
 - [Research](#research-management-schema)
@@ -6,6 +31,7 @@ This document outlines potential schema ideas for the AcademicHub API.
 - [Course](#course-management-schema)
 - [Facilities](#facilities-management-schema)
 
+<<<<<<< HEAD:sql/some_ideas.md
 ```sql
 -- 0  Create the database
 -- 1  Declare all the schemas
@@ -15,6 +41,9 @@ This document outlines potential schema ideas for the AcademicHub API.
 ```
 
 ## Research Management Schema
+=======
+### Research Management Schema
+>>>>>>> 68820ac (Some stash):sql/some_sql.md
 This schema facilitates the administration and tracking of research activities within the academic community.
 - Research Projects
     - **Description:** Stores details about each research project.
@@ -27,7 +56,7 @@ This schema facilitates the administration and tracking of research activities w
     - **Fields:** Institution, Contact, Project ID, Agreement Details.
 
 
-## Event Management Schema
+### Event Management Schema
 Helps in organizing and managing academic and extracurricular events.
 - Events
     - **Description:** Details of each event organized by the institution.
@@ -43,7 +72,7 @@ Helps in organizing and managing academic and extracurricular events.
     - **Fields:** Event ID, Feedback, Rating, Survey Results.
 
 
-## Course Management Schema
+### Course Management Schema
 Provides a detailed framework for managing academic courses.
 - Courses
     - **Description:** Detailed records for each academic course.
@@ -59,7 +88,7 @@ Provides a detailed framework for managing academic courses.
     - **Fields:** Course ID, Type, Description, Due Date, Submission Guidelines.
 
 
-## Facilities Management Schema
+### Facilities Management Schema
 Aids in the efficient management of campus facilities.
 - Facilities
     - **Description:** Inventory of all campus facilities.
@@ -75,7 +104,7 @@ Aids in the efficient management of campus facilities.
     - **Fields:** Facility ID, Usage Data, Time, Occupancy Rate.
 
 
-## Financial Management System
+### Financial Management System
 Manage tuition payments, scholarships, and other financial aspects related to students and faculty.
 
 - Tables: 
