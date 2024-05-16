@@ -5,15 +5,15 @@ from fastapi import Depends, HTTPException, APIRouter
 from typing import Type, Callable
 
 # local imports
-from src.model.auth import JWTBearer, create_token, DEFAULT_USER
-from src.model.infrastructure import *
-# from src.model.general import *
-from src.model.library import *
-from src.model.school import *
 from src.database import *
 
+from src.model.auth import JWTBearer, create_token, DEFAULT_USER, auth_classes
+from src.model.infrastructure import *
+from src.model.library import *
+from src.model.school import *
 
-home: APIRouter = APIRouter()
+
+home: APIRouter = APIRouter()  # for home routes
 """
 # Home Route
 
@@ -25,19 +25,27 @@ This route contains the main methods that will be used to display the home page 
 - Get the contact page
 - Get the help page
 """
+
 auth: APIRouter = APIRouter()  # for authentication routes
+"""
+# Authentication Routes
+
+This route contains the main methods that will be used to authenticate users.
+
+"""
+
 basic_dt: APIRouter = APIRouter()  # for data table routes
 crud_attr: APIRouter = APIRouter()  # crud routes for each attribute
 views: APIRouter = APIRouter()  # todo: views routes... for views xd
 
 
+# @home.get("/", tags=["home"])
+# def read_root(): return {"Hello From": "Home Route"}
+
+# @home.get("/penchs", tags=["home"])
+# def read_root(): return {"Pench's": "Hola Amix"}
 
 
-@home.get("/", tags=["home"])
-def read_root(): return {"Hello From": "Home Route"}
-
-@home.get("/penchs", tags=["home"])
-def read_root(): return {"Pench's": "Hola Amix"}
 
 
 # * data table routes
@@ -153,6 +161,32 @@ def _crud_routes(
     [_delete_route(attr) for attr in included_attributes]   # * Delete
 
 
+# ? TEST --------------------------------------------------------------------------------------
+
+# * Authentication Routes (test routes)
+
+@auth.post("/token", tags=["Auth"])
+def get_test_token(): return {"access_token": create_token(DEFAULT_USER)}
+
+@auth.get("/protected", tags=["Auth"], dependencies=[Depends(JWTBearer())])
+def protected_route(): return {"message": "You are viewing a protected route"}
+
+
+def _add_schema_routes(schema: str, schema_classes: list[Type[Base]], db_dependency: Callable, b_color: str = ""):
+    print(f"\033[0;30;{b_color}mACADEMIC HUB - {schema.capitalize()}\033[m")  # YELLOW
+    for schema_class in schema_classes:
+        print(f"\t\033[3m{schema_class.__name__}\033[m")
+        _dt_routes(schema_class, basic_dt, db_dependency)  # this is available for any db user
+        _crud_routes(schema_class, crud_attr, db_dependency)  # this is available for any db user
+
+
+_add_schema_routes("auth", auth_classes, get_db_school, "43")  # yellow
+# _add_schema_routes("infrastructure", infra_classes, get_db_infrastructure, "44")  # blue
+# _add_schema_routes("library", lib_classes, get_db_library, "41")  # red
+_add_schema_routes("school", school_classes, get_db_school, "42")  # green
+
+
+
 # todo: Test this function
 # todo: Add a way to get the view name from the model
 # * views routes
@@ -181,28 +215,16 @@ def _views_routes(
     # todo: ADMIN must be able to see all the tables for his schema (FOR EACH SCHEMA)
     # todo: USER can just see the data associated to him (school & library) 
 
-# for general_class in general_classes:
-#     _dt_routes(general_class, basic_dt, get_db_school)  # this is available for any db user
-#     _crud_routes(general_class, crud_attr, get_db_school)  # this is available for any db user
-
-# for lib_class in lib_classes:
-#     _dt_routes(lib_class, basic_dt, get_db_library)  # this is available for any db user
-#     _crud_routes(lib_class, crud_attr, get_db_library)  # this is available for any db user
-
-# for school_class in school_classes:
-#     _dt_routes(school_class, basic_dt, get_db_school)  # this is available for any db user
-#     _crud_routes(school_class, crud_attr, get_db_school)  # this is available for any db user
-
 # * views_routes(views, get_db_school)
 # * views_routes(views, get_db_library)
 
-
-# ? TEST --------------------------------------------------------------------------------------
 
 # todo: CHECK THIS PYDANTIC STUFF
 # todo: TO ALLOW THE 'DYNCAMIC' CREATION OF ROUTES
 # todo: This means that the routes will be created based on the model's attributes
 # todo: It allow the creation of routes for any model without having to write the routes manually... (I think!... I'm not sure xd)
+
+
 
 # from pydantic import BaseModel
 # from src.model.school import School
@@ -223,15 +245,3 @@ def _views_routes(
 #     #     query = query.filter(School.city == params.city)
 #     return query.all()
 
-
-# * Authentication Routes (test routes)
-
-@auth.post("/token", tags=["Auth"])
-def get_test_token():
-    return {"access_token": create_token(DEFAULT_USER)}
-
-@auth.get("/protected", tags=["Auth"], dependencies=[Depends(JWTBearer())])
-def protected_route():
-    return {"message": "You are viewing a protected route"}
-
-# todo: Find a better way to do this even better...

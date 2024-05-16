@@ -6,6 +6,13 @@ This document outlines potential schema ideas for the AcademicHub API.
 - [Course](#course-management-schema)
 - [Facilities](#facilities-management-schema)
 
+```sql
+-- 0  Create the database
+-- 1  Declare all the schemas
+-- 2  Declare all the tables for each schema
+-- 3  Declare all the views for each schema
+-- 4  Add some data to the tables
+```
 
 ## Research Management Schema
 This schema facilitates the administration and tracking of research activities within the academic community.

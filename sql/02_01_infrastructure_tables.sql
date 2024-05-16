@@ -1,5 +1,5 @@
--- 03_infrastructure_tables.sql
--- Infrastructure Management Tables for Academic Hub
+-- INFRASTRUCTURE MANAGEMENT TABLES
+-- Defines the tables for the infrastructure management module
 
 -- Table: Buildings
 -- Stores information about campus buildings

@@ -39,6 +39,3 @@ class Loan(IDBaseModel):
 
 
 lib_classes = [obj for _, obj in globals().items() if isinstance(obj, type) and obj.__module__ == __name__]
-
-print(f"\033[0;30;43mACADEMIC HUB - Library Management\033[m")
-[print(f"\t\033[3m{lib_c.__name__}\033[m") for lib_c in lib_classes]

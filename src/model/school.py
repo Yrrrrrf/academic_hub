@@ -60,8 +60,4 @@ class ClassSchedule(IDBaseModel):
 
 
 # * Look for all the classes defined in this module and store them in a list
-# * then we can use them to create the routes for the API for each model
 school_classes: list = [obj for _, obj in globals().items() if isinstance(obj, type) and obj.__module__ == __name__]
-
-print(f"\033[0;30;43mACADEMIC HUB - School Management\033[m")
-[print(f"\t\033[3m{sch_c.__name__}\033[m") for sch_c in school_classes]

@@ -4,6 +4,7 @@
 DROP DATABASE IF EXISTS academic_hub;
 CREATE DATABASE academic_hub WITH
     OWNER = postgres  -- owner of the database
+    -- change the owner to the user that will be used to connect to the database
     ENCODING = 'UTF8'  -- character encoding
     LOCALE_PROVIDER = 'libc'  -- locale provider (libc or icu) it is used to determine the locale settings for the database
     CONNECTION LIMIT = -1  -- maximum number of concurrent connections to the database (-1 means no limit)

@@ -1,13 +1,14 @@
 -- ACADEMIC HUB DATABASE SCHEMA
 
+
 DO $$
 DECLARE
     schemas TEXT[] := ARRAY[  -- List of all schema names
 --         'public',
-        'auth',
-        'library_management',
-        'school_management',
-        'infrastructure_management'
+        'auth',  -- main default user data (login, password, roles, etc.)
+        'infrastructure_management',  -- infrastructure management schema
+        'library_management',  -- library management schema
+        'school_management'  -- school management schema
 --         'payment_management'
         ];
     schema_name TEXT;
@@ -53,9 +54,9 @@ $$ LANGUAGE plpgsql;
 -- Create roles and grant privileges to them...
 
 SELECT create_and_grant_role(
-    'library_admin',
-    'some_library_password',
-    ARRAY['auth', 'library_management']
+    'infrastructure_admin',
+    'some_infrastructure_password',
+    ARRAY['auth', 'infrastructure_management']
 );
 
 SELECT create_and_grant_role(
@@ -65,10 +66,11 @@ SELECT create_and_grant_role(
 );
 
 SELECT create_and_grant_role(
-    'infrastructure_admin',
-    'some_infrastructure_password',
-    ARRAY['auth', 'infrastructure_management']
+    'library_admin',
+    'some_library_password',
+    ARRAY['auth', 'library_management']
 );
+
 
 -- SELECT create_and_grant_role(
 --     'payment_admin',

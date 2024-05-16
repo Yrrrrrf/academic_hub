@@ -1,18 +1,8 @@
-# Global Settings for the application
-
-# ? Imports -------------------------------------------------------------------------------------
-
 from enum import Enum
-from dataclasses import dataclass
 
-# ? Globals -------------------------------------------------------------------------------------
 
-@dataclass
 class Config(Enum):
-    """
-    Project Config
-    """
-    # App info
+    """Project Config"""
     NAME = "Academic Hub"
     VERSION = "v0.1.0"
     AUTHOR = "Yrrrrrf"

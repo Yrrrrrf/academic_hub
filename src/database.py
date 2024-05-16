@@ -27,9 +27,13 @@ class UserType(Enum):
 
 def _session_factory(user_type: str) -> sessionmaker:
     """
-        Creates a sessionmaker for the specified user type.
+    Creates a sessionmaker for the specified user type.
 
-        Args: 
+    Args:
+        user_type (UserType): The user type for which to create the session.
+    
+    Returns:
+        sessionmaker: A configured sessionmaker instance.
     """
     return sessionmaker(
         autocommit=False, 
