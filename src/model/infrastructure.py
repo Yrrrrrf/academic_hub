@@ -1,5 +1,14 @@
-# from pydantic import BaseModel
-# from typing import Optional
+from pydantic import BaseModel
+from typing import Optional
+
+from src.database import get_classes_from_globals, Base
+
+
+class BuildingBase(BaseModel):
+    __tablename__ = 'building'
+    __table_args__ = {'schema': 'infrastructure_management'}
+
+    name: str
 
 
 # class BuildingBase(BaseModel):
@@ -39,3 +48,7 @@
 #     total_floors = Column(Integer)
 #     accessibility_features = Column(Boolean, default=False)
 
+# # 
+
+
+infra_classes: list = get_classes_from_globals(globals())

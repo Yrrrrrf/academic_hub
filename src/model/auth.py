@@ -1,12 +1,3 @@
-"""
-    This module contains the authentication model.
-
-    It is responsible for handling the authentication of users.
-
-    This to make them able to access the application.
-"""
-
-
 from sqlalchemy import JSON, Column, String, DateTime
 import datetime
 
@@ -17,16 +8,16 @@ SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='auth')
 
 
 class GeneralUser(NamedBaseModel):
-    # id & name are inherited from NamedBaseModel
     email = Column(String(255), index=True, nullable=False, unique=True)
     password_hash = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.now)
     additional_info = Column(JSON, default={})
 
 
-auth_classes: list = [obj for _, obj in globals().items() if isinstance(obj, type) and obj.__module__ == __name__]
+auth_classes: list = get_classes_from_globals(globals())
 
 
+# ? AUTH STUFF --------------------------------------------------------------------------------------
 
 
 from fastapi import HTTPException, Request
@@ -35,20 +26,19 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import encode, decode
 
 
-SECRET_KEY = "some secret key..."
-ALGORITHM = "HS256"
+ALGORITHM: str = "HS256"
 
-DEFAULT_USER = {
+DEFAULT_USER: dict = {
   "email": "admin@localhost",
   "password": "some_admin_password",
 }
 
 
 def create_token(data: dict):
-    return encode(payload=data, key=SECRET_KEY, algorithm=ALGORITHM)
+    return encode(payload=data, key=PRIVATE_KEY, algorithm=ALGORITHM)
 
 def decode_token(token: str) -> dict:
-    return decode(jwt=token, key=SECRET_KEY, algorithms=[ALGORITHM])
+    return decode(jwt=token, key=PRIVATE_KEY, algorithms=[ALGORITHM])
 
 
 class JWTBearer(HTTPBearer):

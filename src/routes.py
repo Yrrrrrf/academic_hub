@@ -10,14 +10,10 @@ from sqlalchemy import text
 # local imports
 from src.database import *
 from src.model.auth import *
-# from src.model.infrastructure import *
-# from src.model.library import *
-# from src.model.school import *
-
-from src.model.auth import JWTBearer, create_token, DEFAULT_USER, auth_classes
 from src.model.infrastructure import *
 from src.model.library import *
 from src.model.school import *
+
 
 # * (17..=82) The code below is really a redundant code
 # * The code inside the method should declared directly in the main file
@@ -36,6 +32,9 @@ def define_routes():
     - Get the contact page
     - Get the help page
     """
+
+    @home.get("/", tags=["Main"])  # todo: Make this rout a redirect to the main web interface (svelte app) on the future...
+    def _home_route(): return {"The interface for Academic Hub API is on: 127.0.0.1:8000/docs"}
 
     auth: APIRouter = APIRouter()  # for authentication routes
     """
@@ -82,24 +81,26 @@ def define_routes():
     - Get some useful view data to display on the application (for each schema)
     """
 
+    print(f"\n\033[0;30;47mACADEMIC HUB\033[m\n")  # WHITE
     return home, auth, basic_dt, crud_attr, views
 
 home, auth, basic_dt, crud_attr, views = define_routes()
 
 
 def _add_schema_routes(schema: str, schema_classes: list[Type[Base]], db_dependency: Callable, b_color: str = ""):  # type: ignore
-    print(f"\033[0;30;{b_color}mACADEMIC HUB - {schema.capitalize()}\033[m")  # YELLOW
+    print(f"\033[0;30;{b_color}m{schema.capitalize()}\033[m")  # YELLOW
+    # print(f"\033[0;30;{b_color}mACADEMIC HUB - {schema.capitalize()}\033[m")  # YELLOW
     for schema_class in schema_classes:
-        print(f"\t\033[3m{schema_class.__name__}\033[m")
+        print(f"    \033[3m{schema_class.__name__}\033[m")
         dt_routes(schema_class, basic_dt, db_dependency)  # this is available for any db user
         # crud_routes(schema_class, crud_attr, db_dependency)  # this is available for any db user
-
+    print()
 
 # * Declare all the routes for each schema (in dependency order)
 # * The Auth schema must be declared first (not really, but it's the most important one)
 _add_schema_routes("auth", auth_classes, partial(get_db, "school"), "43")  # yellow
-# _add_schema_routes("infrastructure", infra_classes, partial(get_db, "infrastructure"), "44")  # blue
-# _add_schema_routes("library", lib_classes, partial(get_db, "library"), "41")  # red
+_add_schema_routes("infrastructure", infra_classes, partial(get_db, "infrastructure"), "44")  # blue
+_add_schema_routes("library", lib_classes, partial(get_db, "library"), "41")  # red
 # _add_schema_routes("school", school_classes, partial(get_db, "school"), "42")  # green
 
 

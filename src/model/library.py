@@ -1,14 +1,16 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Date
 from sqlalchemy.orm import relationship
 
-from src.database import base_model, Base
+from src.database import base_model, Base, get_classes_from_globals
 
 
 SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='library_management')
 
-
-# * For each model, create a class that inherits from the appropriate base class
-for model in ['Author', 'Library', 'Publisher', 'Topic']:
+for model in [
+    'Author', 
+    'Publisher', 
+    'Topic'
+    ]:
     exec(f'class {model}(NamedBaseModel): pass')
 
 class Book(NamedBaseModel):
@@ -28,9 +30,6 @@ class BookLibrary(SchemaBaseModel):
     book_id = Column(Integer, ForeignKey('library_management.book.id'))
     library_id = Column(Integer, ForeignKey('library_management.library.id'))
 
-class AcademicMember(IDBaseModel):
-    user_id = Column(Integer, ForeignKey('general_user.id', ondelete='CASCADE'))
-
 class Loan(IDBaseModel):
     academic_member_id = Column(Integer, ForeignKey('library_management.academic_member.id'))
     book_library_id = Column(Integer, ForeignKey('library_management.book_library.book_series_id'))
@@ -38,4 +37,4 @@ class Loan(IDBaseModel):
     return_date = Column(Date)
 
 
-lib_classes = [obj for _, obj in globals().items() if isinstance(obj, type) and obj.__module__ == __name__]
+lib_classes: list = get_classes_from_globals(globals())

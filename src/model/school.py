@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, Time, Numeric
-from src.database import base_model
+from src.database import base_model, get_classes_from_globals
 
 
 SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='school_management')
@@ -7,14 +7,13 @@ SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='school_managem
 
 # * For each model, create a class that inherits from the appropriate base class
 for model in [
-    'School', 
-    'Instructor', 
+    'Instructor',
     'Subject', 
-    'AcademicPeriod', 
+    'AcademicPeriod',
     'ExamType'
-    'Classroom',
     ]:
     exec(f'class {model}(NamedBaseModel): pass')
+
 
 class Student(IDBaseModel):
     # todo: check if this is correct! Declaring again the id column...
@@ -36,7 +35,6 @@ class ClassGroup(IDBaseModel):
 
 class StudentEnrollment(IDBaseModel):
     student_id = Column(Integer, ForeignKey('school_management.student.id'), nullable=False)
-    # todo: CHANGE THE class_group_id TO BE A STRING!!!
     class_group_id = Column(Integer, ForeignKey('school_management.class_group.id'), nullable=False)
     enrollment_date = Column(Date, nullable=False)
 
@@ -59,5 +57,4 @@ class ClassSchedule(IDBaseModel):
     end_time = Column(Time, nullable=False)
 
 
-# * Look for all the classes defined in this module and store them in a list
-school_classes: list = [obj for _, obj in globals().items() if isinstance(obj, type) and obj.__module__ == __name__]
+school_classes: list = get_classes_from_globals(globals())

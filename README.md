@@ -13,15 +13,15 @@ Academic Hub is a comprehensive platform designed to manage academic resources a
 
 ### Prerequisites
 
-- Install the [PostgreSQL](https://www.postgresql.org/download/) database server and used files inside the [sql](./sql) folder to create the database schema and populate it with sample data.
+Install the [PostgreSQL](https://www.postgresql.org/download/) database server and used files inside the [sql](./sql) folder to create the database schema and populate it with sample data.
 
-- Use the latest version of [Python](https://www.python.org/downloads/).
+Use the latest version of [Python](https://www.python.org/downloads/).
 
-- Use [npm](https://www.npmjs.com/get-npm) to run the frontend application.
+Use [npm](https://www.npmjs.com/get-npm) to run the frontend application.
 
 ### Installation
 
-- Install the required packages using the following command:
+Install the required packages using the following command:
 ```bash
 # using pip
 pip install -r requirements.txt  # using pip
@@ -30,22 +30,45 @@ conda install --file requirements.txt  # using conda
 mamba install --file requirements.txt  # using mamba
 ```
 
-- Install the `npm` package manager and the `svelte` framework to run the frontend application.
+Install the `npm` package manager and the `svelte` framework to run the frontend application.
 ```bash
 cd hub  # change to the frontend directory (svelte app)
 npm install  # install the required packages
 ```
 
-- Configure the database connection creating the [.env](./.env) file with the following content:
+Create the [.env](./.env) file in the root directory and **add the following environment variables** to configure private database credentials:
 ```bash
-DB_NAME = "database_name"  # the name of the database to connect to
-HOST = "localhost"  # the host of the database
+# * Database (PostgreSQL)
+DB_NAME = "academic_hub"
+DB_HOST = "localhost"
+DB_PORT = "5432"
+DB_OWNER = "postgres"
+DB_OWNER_PASSWORD = "fire"
 
-LIBRARY_USER = "library_user"  # the user for the library
-LIBRARY_PSWD = "some_password"  # the password for the library user
-SCHOOL_USER = "school_user"  # the user for the school
-SCHOOL_PSWD = "somw_password"  # the password for the school user
+
+# * Authentication main settings
+PRIVATE_KEY = "some secret key..."
+
+
+# * db admins credentials
+# these users are the ones that will be used to connect to the database (have access to only some schemas to manage an specific part of the system)
+INFRASTRUCTURE_ADMIN = "infrastructure_admin"
+INFRASTRUCTURE_PWORD = "some_new_infra_password"
+
+SCHOOL_ADMIN = "school_admin"
+SCHOOL_PWORD = "some_new_school_password"
+
+LIBRARY_ADMIN = "library_admin"
+LIBRARY_PWORD = "some_new_library_password"
 ```
+
+Execute the [00_create_db.sql](./sql/00_create_db.sql) file with a superuser to create the database to create the database.
+
+Once created the database. Use the [setup.py](./src/setup.py) script to create the database schemas and populate it with sample data using the following command:
+```bash
+python src/setup.py
+```
+
 
 ## Database Schema
 
@@ -56,6 +79,8 @@ SCHOOL_PSWD = "somw_password"  # the password for the school user
 - Run the API server using the following command:
 ```bash
 uvicorn src.main:app --reload --host 127.0.0.1 --port 8000
+# or 
+python src/main.py  # run the API server (this way doesn't support live reload)
 ```
 - Look for the API documentation at [port/docs#/](http://127.0.0.1:8000/docs#/)
 

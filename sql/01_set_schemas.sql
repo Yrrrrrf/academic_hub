@@ -21,7 +21,6 @@ END $$;
 
 SET search_path TO auth;  -- Set search path first
 
-
 -- Create the role that will be used to manage one specific schema (some admin role)
 CREATE OR REPLACE FUNCTION create_and_grant_role(
     role_name TEXT,
@@ -50,27 +49,25 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
 -- Create roles and grant privileges to them...
 
 SELECT create_and_grant_role(
     'infrastructure_admin',
-    'some_infrastructure_password',
+    'infra_password',
     ARRAY['auth', 'infrastructure_management']
 );
 
 SELECT create_and_grant_role(
     'school_admin',
-    'some_school_password',
+    'school_password',
     ARRAY['auth', 'infrastructure_management',  'school_management']
 );
 
 SELECT create_and_grant_role(
     'library_admin',
-    'some_library_password',
-    ARRAY['auth', 'library_management']
+    'library_password',
+    ARRAY['auth', 'infrastructure_management', 'library_management']
 );
-
 
 -- SELECT create_and_grant_role(
 --     'payment_admin',
