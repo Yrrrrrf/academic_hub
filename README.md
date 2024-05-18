@@ -45,10 +45,8 @@ DB_PORT = "5432"
 DB_OWNER = "postgres"
 DB_OWNER_PASSWORD = "fire"
 
-
 # * Authentication main settings
 PRIVATE_KEY = "some secret key..."
-
 
 # * db admins credentials
 # these users are the ones that will be used to connect to the database (have access to only some schemas to manage an specific part of the system)

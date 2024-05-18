@@ -36,6 +36,7 @@ placeholders: dict = {  # placeholders for the SQL files
     "library_admin": library_admin,
     "library_password": library_admin_password,
 }
+# print(f"\n\033[95mPlaceholders\033[0m: {placeholders}")
 
 # * Load the SQL files
 def _filter_views(excluded_words: list[str], files: list[str]) -> list[str]:
@@ -56,9 +57,11 @@ sql_files_content: list[str] = [  # Get the content of the SQL files
     ) for file in sql_files_name  # ignore the first file (00_create_db.sql)
 ]
 
+# print(sql_files_content[1])
+
 sql_files: list[tuple[str, str]] = zip(sql_files_name, sql_files_content)
 next(sql_files)  # remove the first element of the zip object
-
+print(sql_files_content[1])
 
 with engine.connect() as conn:
     print(f"\n\033[95mConnected\033[0m to \033[3m{DB_NAME}\033[0m as \033[3m{DB_OWNER}\033[0m") 

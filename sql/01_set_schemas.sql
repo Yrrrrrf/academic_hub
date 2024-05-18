@@ -49,6 +49,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
 -- Create roles and grant privileges to them...
 
 SELECT create_and_grant_role(
@@ -78,5 +79,18 @@ SELECT create_and_grant_role(
 -- SELECT create_and_grant_role(
 --     'security_admin',
 --     'some_security_password',
---     ARRAY['auth', 'security_management']
+-- --     ARRAY['auth', 'security_management']
 -- );
+
+
+-- todo: Fix the error that do not allow to grant privileges to the roles!
+-- The error only happens when using this file as executable script for src/setup.py
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA auth, infrastructure_management TO infrastructure_admin;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA auth, infrastructure_management TO infrastructure_admin;
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA auth, infrastructure_management, school_management TO school_admin;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA auth, infrastructure_management, school_management TO school_admin;
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA auth, infrastructure_management, library_management TO library_admin;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA auth, infrastructure_management, library_management TO library_admin;
+

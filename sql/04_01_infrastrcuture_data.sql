@@ -99,7 +99,7 @@ INSERT INTO infrastructure_management.room_type (name) VALUES
     ('Office')
 ;
 
-INSERT INTO infrastructure_management.room_base (building_id, room_type, name, capacity, equipment_details) VALUES
+INSERT INTO infrastructure_management.room (building_id, room_type, name, capacity, equipment_details) VALUES
     (1, 1, 'Sala 1', 20, '{"projector": true, "whiteboard": true, "computers": 20}'),
     (1, 1, 'Sala 2', 25, '{"projector": true, "whiteboard": true, "computers": 20}'),
     (1, 1, 'Sala 3', 30, '{"projector": true, "whiteboard": true, "computers": 20}'),

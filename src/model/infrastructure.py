@@ -1,54 +1,36 @@
-from pydantic import BaseModel
-from typing import Optional
-
-from src.database import get_classes_from_globals, Base
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, Boolean, JSON, ForeignKeyConstraint
+from src.database import base_model, get_classes_from_globals
 
 
-class BuildingBase(BaseModel):
-    __tablename__ = 'building'
-    __table_args__ = {'schema': 'infrastructure_management'}
-
-    name: str
+SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='infrastructure_management')
 
 
-# class BuildingBase(BaseModel):
-#     name: str
-#     address: Optional[str] = None
-#     total_floors: Optional[int] = None
-#     accessibility_features: Optional[bool] = False
+class Building(NamedBaseModel):
+    address = Column(Text)
+    total_floors = Column(Integer)
+    accessibility_features = Column(Boolean, default=False)
 
-# class BuildingCreate(BuildingBase):
-#     pass
+class RoomType(NamedBaseModel):
+    name = Column(String(32), unique=True, nullable=False)
 
-# class BuildingUpdate(BuildingBase):
-#     pass
+class Room(IDBaseModel):
+    room_type = Column(Integer, ForeignKey('infrastructure_management.room_type.id'), nullable=False)
+    name = Column(String(32))
+    building_id = Column(Integer, ForeignKey('infrastructure_management.building.id'), nullable=False)
+    capacity = Column(Integer)
+    equipment_details = Column(JSON)
 
-# class BuildingInDB(BuildingBase):
-#     id: int
+class Faculty(NamedBaseModel):
+    name = Column(String(255), nullable=False)
+    # coordinates = Column(Geography('POINT', srid=4326))  # Uncomment if using PostGIS
 
-#     class Config:
-#         orm_mode = True
+class FacultyBuilding(SchemaBaseModel):
+    faculty_id = Column(Integer, ForeignKey('infrastructure_management.faculty.id'), primary_key=True, nullable=False)
+    building_id = Column(Integer, ForeignKey('infrastructure_management.building.id'), primary_key=True, nullable=False)
 
+class Library(IDBaseModel):
+    faculty_id = Column(Integer, ForeignKey('infrastructure_management.faculty.id'), nullable=False)
+    building_id = Column(Integer, ForeignKey('infrastructure_management.building.id'), nullable=False)
 
-
-
-# from sqlalchemy import Column, Integer, String, Boolean, Text
-# from sqlalchemy.ext.declarative import declarative_base
-
-# Base = declarative_base()
-
-
-# class Building(Base):
-#     __tablename__ = 'building'
-#     __table_args__ = {'schema': 'infrastructure_management'}
-    
-#     id = Column(Integer, primary_key=True, index=True)
-#     name = Column(String(255), nullable=False)
-#     address = Column(Text)
-#     total_floors = Column(Integer)
-#     accessibility_features = Column(Boolean, default=False)
-
-# # 
-
-
+# Collect all the infrastructure management classes
 infra_classes: list = get_classes_from_globals(globals())

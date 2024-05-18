@@ -2,9 +2,10 @@
 from fastapi import Depends, HTTPException, APIRouter
 
 # stdlib imports
-from typing import List, Type, Callable
+from typing import List, Optional, Type, Callable
 from functools import partial
 
+from pydantic import BaseModel, create_model
 from sqlalchemy import text
 
 # local imports
@@ -33,8 +34,8 @@ def define_routes():
     - Get the help page
     """
 
-    @home.get("/", tags=["Main"])  # todo: Make this rout a redirect to the main web interface (svelte app) on the future...
-    def _home_route(): return {"The interface for Academic Hub API is on: 127.0.0.1:8000/docs"}
+    # @home.get("/", tags=["Main"])  # todo: Make this rout a redirect to the main web interface (svelte app) on the future...
+    # def _home_route(): return {"The interface for Academic Hub API is on: 127.0.0.1:8000/docs"}
 
     auth: APIRouter = APIRouter()  # for authentication routes
     """
@@ -98,9 +99,9 @@ def _add_schema_routes(schema: str, schema_classes: list[Type[Base]], db_depende
 
 # * Declare all the routes for each schema (in dependency order)
 # * The Auth schema must be declared first (not really, but it's the most important one)
-_add_schema_routes("auth", auth_classes, partial(get_db, "school"), "43")  # yellow
-_add_schema_routes("infrastructure", infra_classes, partial(get_db, "infrastructure"), "44")  # blue
-_add_schema_routes("library", lib_classes, partial(get_db, "library"), "41")  # red
+# _add_schema_routes("auth", auth_classes, partial(get_db, "school"), "43")  # yellow
+# _add_schema_routes("infrastructure", infra_classes, partial(get_db, "infrastructure"), "44")  # blue
+# _add_schema_routes("library", lib_classes, partial(get_db, "library"), "41")  # red
 # _add_schema_routes("school", school_classes, partial(get_db, "school"), "42")  # green
 
 
@@ -114,42 +115,189 @@ _add_schema_routes("library", lib_classes, partial(get_db, "library"), "41")  # 
 # todo: It allow the creation of routes for any model without having to write the routes manually... (I think!... I'm not sure xd)
 
 
-# from fastapi import APIRouter, Depends, HTTPException
-# from sqlalchemy.orm import Session
-# from typing import List
-
-# def get_building(db: Session, building_id: int):
-#     return db.query(Building).filter(Building.id == building_id).first()
-
-# # def get_buildings(db: Session, skip: int = 0, limit: int = 10):
-# def get_buildings(db: Session):
-# # def get_buildings(db: Session):
-#     return db.query(Building).all()
+# Now create the routes for the get user using the response model
+@home.get("/g_user/{user_id}/", tags=["User"], response_model=UserResponse)
+def get_user(user_id: int, db: Session = Depends(partial(get_db, "school"))):
+    db_user = db.query(GeneralUser).filter(GeneralUser.id == user_id).first()
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
 
 
-# @home.get("/building/id={building_id}", tags=["Building"])
-# def read_building(building_id: int, db: Session = Depends(partial(get_db, "infrastructure"))):
-#     db_building = get_building(db, building_id=building_id)
-#     if db_building is None:
-#         raise HTTPException(status_code=404, detail="Building not found")
-#     return db_building
+# * GET
+def get_routes(
+    model: Type[Base],  # type: ignore
+    response_model: Type[BaseModel],
+    router: APIRouter, 
+    db_dependency: Callable, 
+):
+    @router.get(f"/{model.__tablename__.lower()}/dt", tags=[model.__name__], response_model=List[str])  # Decorate the route function with the GET route for getting all resources
+    def get_columns(): return [c.name for c in model.__table__.columns]  # Return a list of column names
 
-# @home.get("/buildings/", tags=["Building"])
-# # def read_buildings(skip: int = 0, limit: int = 10, db: Session = Depends(partial(get_db, "infrastructure"))):
-# def read_buildings(db: Session = Depends(partial(get_db, "infrastructure"))):
-#     buildings = get_buildings(db)
-#     return buildings
+    @router.get(f"/{model.__tablename__.lower()}s", tags=[model.__name__], response_model=List[response_model])  # Decorate the route function with the GET route for getting all resources
+    def get_all(db: Session = Depends(db_dependency)): return db.query(model).all()  # Return a list of all resources
+
+
+
+
+
+
+
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy import Integer, String
+from typing import Type, Callable, List, Any
+from pydantic import BaseModel
+
+def get_by_attr_routes(
+    model: Type[Base],
+    response_model: Type[BaseModel],
+    router: APIRouter,
+    db_dependency: Callable,
+    excluded_attributes: List[str] = ["id"],
+):
+    def _get_route(attribute: str, attribute_type: Any):
+        # Define the appropriate parameter type dynamically
+        if attribute_type == Integer:
+            param_type = int
+        elif attribute_type == String:
+            param_type = str
+        else:
+            param_type = str  # Default to str if type is unknown
+        
+        # Create the route function dynamically with the correct parameter type
+        @router.get(
+            f"/{model.__tablename__.lower()}/{attribute}={{value}}",
+            tags=[model.__name__],
+            response_model=List[response_model]
+        )
+        def get_resource(value: param_type, db: Session = Depends(db_dependency)):
+            result = db.query(model).filter(getattr(model, attribute) == value).all()
+            if not result:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"No {model.__name__} with {attribute} '{value}' found."
+                )
+            return result
+
+    # Get included attributes and their types
+    included_attributes = [
+        (attr, col.type.__class__)
+        for attr, col in model.__table__.columns.items()
+        # if attr not in excluded_attributes
+    ]
+
+    # Create routes for each included attribute
+    for attr, attr_type in included_attributes:
+        _get_route(attr, attr_type)
+
+# Example usage
+get_by_attr_routes(
+    model=GeneralUser,
+    response_model=UserResponse,
+    router=basic_dt,
+    db_dependency=partial(get_db, "school")
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# def get_by_attr_routes(
+#     model: Type[Base],  # type: ignore
+#     response_model: Type[BaseModel],
+#     router: APIRouter,
+#     db_dependency: Callable,
+#     excluded_attributes: list[str] = ["id"],  # List of attributes to exclude from CRUD operations (default: ["id"])
+# ):
+#     def _get_route(attribute: str):  # Function to create a GET route for a given attribute
+#         @router.get(f"/{model.__tablename__.lower()}/{attribute}={{value}}", tags=[model.__name__], response_model=List[response_model])  # Decorate the route function with the GET route for getting a resource by attribute
+#         def get_resource(value: str, db: Session = Depends(db_dependency)):
+#             result = db.query(model).filter(getattr(model, attribute) == value).all()  # Get the resource by the attribute value
+#             if not result:  # If the resource is not found
+#                 raise HTTPException(
+#                     status_code=404,
+#                     detail=f"No {model.__name__} with {attribute} '{value}' found."
+#                 )
+#             return result  # Return the resource data
+
+#     # included_attributes = [attr for attr in model.__table__.columns.keys() if attr not in excluded_attributes]  # Get a list of included attributes
+#     included_attributes = [attr for attr in model.__table__.columns.keys()]
+
+#     [_get_route(attr) for attr in included_attributes]  # Create a GET route for each included attribute
+
+
+def post_route(
+    model: Type[Base],  # type: ignore
+    create_model: Type[BaseModel],
+    response_model: Type[BaseModel],
+    router: APIRouter,
+    db_dependency: Callable,
+):
+    @router.post(f"/{model.__tablename__.lower()}/", tags=[model.__name__], response_model=response_model)
+    def create_resource(resource: create_model, db: Session = Depends(db_dependency)):
+        db_resource: Base = model(**resource.dict())  # Create a new resource instance  # type: ignore
+        db.add(db_resource)
+        try:
+            db.commit()
+            db.refresh(db_resource)
+        except Exception as e:
+            db.rollback()  # Rollback the transaction
+            raise e  # Raise the exception
+        return db_resource  # Return the resource data
+
+
+get_routes(model=GeneralUser, response_model=UserResponse, router=basic_dt,  db_dependency=partial(get_db, "school"))
+# get_by_attr_routes(model=GeneralUser, response_model=UserResponse, router=basic_dt, db_dependency=partial(get_db, "school"))
+post_route(model=GeneralUser, create_model=UserCreate, response_model=UserResponse, router=basic_dt, db_dependency=partial(get_db, "school"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 # * Authentication Routes (test routes) -------------------------------------------------------
 
-@auth.post("/token", tags=["Auth"])
-def get_test_token(): return {"access_token": create_token(DEFAULT_USER)}
+# @auth.post("/token", tags=["Auth"])
+# def get_test_token(): return {"access_token": create_token(DEFAULT_USER)}
 
-@auth.get("/protected", tags=["Auth"], dependencies=[Depends(JWTBearer())])
-def protected_route(): return {"message": "You are viewing a protected route"}
+# @auth.get("/protected", tags=["Auth"], dependencies=[Depends(JWTBearer())])
+# def protected_route(): return {"message": "You are viewing a protected route"}
 
 
 # todo: Add the respective views for each schema! ------------------------------------------------

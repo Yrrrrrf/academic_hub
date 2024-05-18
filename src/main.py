@@ -1,12 +1,10 @@
 """
-Main file for the FastAPI application
-
-This file is the entry point for the FastAPI application. It is responsible for creating the FastAPI application and running it.
+    Main file for the FastAPI application
 """
+
 # ? 3rd party imports
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 # ? Local imports
 from src.routes import *
@@ -36,7 +34,6 @@ app.add_middleware(  # Add CORS middleware
     allow_headers=["*"],
 )
 
-
 # * Create routes
 app.include_router(home)  # * main routes for the application (home, about, contact, help, etc.)
 app.include_router(auth)  # * authentication routes (login, logout, etc.)
@@ -47,5 +44,12 @@ app.include_router(views)  # * views for the application (for each schema on the
 
 # * Run the application
 if __name__ == "__main__":
+    """
+        Run the FastAPI application
+    
+        Using the `python main.py` will use this block to run the FastAPI application.
+        It will run the application using the `uvicorn` server on the localhost at port 8000.
+        So it wont be updated automatically when the code changes.
+    """
     import uvicorn  # import uvicorn to run the application
     uvicorn.run(app, host="127.0.0.1", port=8000)

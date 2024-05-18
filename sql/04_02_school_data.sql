@@ -26,7 +26,7 @@ INSERT INTO auth.general_user (name, email, password_hash) VALUES
     ('Erick Lara', 'elaraw@alumno.uaemex.mx', 'some_generic_password'),
     ('Juan Fuentes', 'jfueno@alumno.uaemex.mx', 'some_generic_password'),
     -- some additional test data
-    ('Juan Pérez', 'jperezd@001@alumno.uaemex.mx', 'some_generic_password'),
+    ('Juan Pérez', 'jperezd001@alumno.uaemex.mx', 'some_generic_password'),
     ('María González', 'mgonzp001@alumno.uaemex.mx', 'some_generic_password')
 ;
 

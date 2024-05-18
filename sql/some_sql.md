@@ -31,19 +31,7 @@ This document outlines potential schema ideas for the AcademicHub API.
 - [Course](#course-management-schema)
 - [Facilities](#facilities-management-schema)
 
-<<<<<<< HEAD:sql/some_ideas.md
-```sql
--- 0  Create the database
--- 1  Declare all the schemas
--- 2  Declare all the tables for each schema
--- 3  Declare all the views for each schema
--- 4  Add some data to the tables
-```
-
-## Research Management Schema
-=======
 ### Research Management Schema
->>>>>>> 68820ac (Some stash):sql/some_sql.md
 This schema facilitates the administration and tracking of research activities within the academic community.
 - Research Projects
     - **Description:** Stores details about each research project.

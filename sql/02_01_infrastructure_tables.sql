@@ -21,8 +21,8 @@ CREATE TABLE infrastructure_management.room_type (
 
 -- Table: Rooms
 -- Contains common attributes for all room types
-DROP TABLE IF EXISTS infrastructure_management.room_base CASCADE;
-CREATE TABLE infrastructure_management.room_base (
+DROP TABLE IF EXISTS infrastructure_management.room CASCADE;
+CREATE TABLE infrastructure_management.room (
     id SERIAL PRIMARY KEY,
     room_type INTEGER NOT NULL REFERENCES infrastructure_management.room_type(id),
     name VARCHAR(32),  -- Identifier for the room (e.g. 101, 102, 103, etc.)

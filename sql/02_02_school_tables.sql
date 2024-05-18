@@ -90,7 +90,7 @@ DROP TABLE IF EXISTS school_management.class_schedule CASCADE;
 CREATE TABLE school_management.class_schedule (
   id SERIAL PRIMARY KEY,
   class_group_id INTEGER NOT NULL REFERENCES school_management.class_group(id),
-  classroom_id INTEGER NOT NULL REFERENCES infrastructure_management.room_base(id),
+  classroom_id INTEGER NOT NULL REFERENCES infrastructure_management.room(id),
   day_of_week VARCHAR(10) NOT NULL, -- e.g., "Monday", "Tuesday" (9 characters max (Saturday))
   start_time TIME NOT NULL,
   end_time TIME NOT NULL

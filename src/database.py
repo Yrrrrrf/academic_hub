@@ -27,6 +27,7 @@ load_dotenv()  # * Load environment variables from .env file
 
 
 PRIVATE_KEY = os.getenv("PRIVATE_KEY")
+PUBLIC_KEY = os.getenv("PUBLIC_KEY")
 
 
 def get_db(user_type: str):
@@ -36,14 +37,24 @@ def get_db(user_type: str):
         Args:
             user_type (str): The user type for the database connection.
     """
-    # db_url = f"postgresql://{os.getenv(f'{user_type}_ADMIN')}:{os.getenv(f'{user_type}_PWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
-    db_url = f"postgresql://postgres:fire@localhost/academic_hub"
+    db_url = f"postgresql://{os.getenv(f'{user_type}_ADMIN')}:{os.getenv(f'{user_type}_PWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
+    # db_url = f"postgresql://postgres:fire@localhost/academic_hub"
     print(f"Connecting to {user_type} database at {db_url}")
     db: Session = sessionmaker(autocommit=False, autoflush=False, bind=create_engine(db_url))()
     try:
         yield db
     finally:
         db.close()
+
+
+def get_classes_from_globals(globals_dict) -> list:
+    """
+    Retrieve a list of classes defined in the given global scope.
+    
+    :param globals_dict: The globals() dictionary from the calling module.
+    :return: A list of class objects defined in the global scope.
+    """
+    return [obj for name, obj in globals_dict.items() if isinstance(obj, type) and obj.__module__ == globals_dict['__name__']]
 
 
 Base = declarative_base()
@@ -189,14 +200,3 @@ def crud_routes(
     [_delete_route(attr) for attr in included_attributes]   # * Delete
 
 
-
-# database.py
-
-def get_classes_from_globals(globals_dict) -> list:
-    """
-    Retrieve a list of classes defined in the given global scope.
-    
-    :param globals_dict: The globals() dictionary from the calling module.
-    :return: A list of class objects defined in the global scope.
-    """
-    return [obj for name, obj in globals_dict.items() if isinstance(obj, type) and obj.__module__ == globals_dict['__name__']]

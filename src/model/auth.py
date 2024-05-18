@@ -1,52 +1,70 @@
+import time
+from typing import Optional
+from pydantic import *
 from sqlalchemy import JSON, Column, String, DateTime
 import datetime
 
 from src.database import *
 
 
+
+
 SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='auth')
 
 
 class GeneralUser(NamedBaseModel):
-    email = Column(String(255), index=True, nullable=False, unique=True)
+    email = Column(String(255), nullable=False, unique=True)
     password_hash = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.now)
-    additional_info = Column(JSON, default={})
+    additional_info = Column(JSON, nullable=True)
 
+
+# * Pydantic Models
+class UserCreate(BaseModel):
+    name: str
+    email: EmailStr
+    password_hash: str  # for password hashing
+    additional_info: Optional[dict] = {}
+
+
+# This is the model that will be returned to the user when 
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: EmailStr
+    additional_info: Optional[dict]
+    created_at: datetime.datetime
+
+    class Config:
+        orm_mode = True
 
 auth_classes: list = get_classes_from_globals(globals())
+# remove UserCreate from the list
+auth_classes.remove(UserCreate)
 
 
 # ? AUTH STUFF --------------------------------------------------------------------------------------
 
 
-from fastapi import HTTPException, Request
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-# * JSON Web Token (JWT)
-from jwt import encode, decode
+import jwt
+from datetime import datetime, timedelta
 
 
-ALGORITHM: str = "HS256"
+# Encode a token
+def create_access_token(data: dict, secret_key: str, algorithm: str, expires_delta: timedelta = None):
+    to_encode = data.copy()  
+    to_encode.update({"exp": datetime.utcnow() + timedelta(minutes=15)})  # 15 minutes expiration
+    return jwt.encode(to_encode, secret_key, algorithm=algorithm)
 
-DEFAULT_USER: dict = {
-  "email": "admin@localhost",
-  "password": "some_admin_password",
-}
+# Decode a token
+def decode_access_token(token: str, secret_key: str, algorithms: list):
+    payload = jwt.decode(token, secret_key, algorithms=algorithms)
+    return payload
 
+# Usage
+SECRET_KEY = "your_secret_key"
+ALGORITHM = "HS256"
 
-def create_token(data: dict):
-    return encode(payload=data, key=PRIVATE_KEY, algorithm=ALGORITHM)
-
-def decode_token(token: str) -> dict:
-    return decode(jwt=token, key=PRIVATE_KEY, algorithms=[ALGORITHM])
-
-
-class JWTBearer(HTTPBearer):
-    async def __call__(self, request: Request):
-        token_dt: HTTPAuthorizationCredentials = await super().__call__(request)
-        dec_token = decode_token(token_dt.credentials)
-
-        if dec_token['email'] != DEFAULT_USER['email']:
-            raise HTTPException(status_code=403, detail="That email is not registered...")
-        if dec_token["password"] != DEFAULT_USER["password"]:
-            raise HTTPException(status_code=403, detail="Invalid password!")
+data = {"sub": "username"}
+token = create_access_token(data, SECRET_KEY, ALGORITHM)
+decoded_data = decode_access_token(token, SECRET_KEY, [ALGORITHM])
