@@ -28,7 +28,7 @@ CREATE TABLE infrastructure_management.room (
     name VARCHAR(32),  -- Identifier for the room (e.g. 101, 102, 103, etc.)
     building_id INTEGER NOT NULL REFERENCES infrastructure_management.building(id),
     capacity INT,
-    equipment_details JSONB
+    equipment_details JSONB DEFAULT '{}'
 );
 
 -- Table: Faculty

@@ -1,23 +1,26 @@
 from sqlalchemy import *
+from sqlalchemy.orm import relationship
 from pydantic import *
 
 from datetime import datetime
 from src.api.database import *
 
 
-# * SQL ALchemy Model 
-class GeneralUser(Base):
-    __tablename__ = "general_user"
+SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='public')
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False)
+
+# * SQL ALchemy Model 
+class GeneralUser(NamedBaseModel):
     email = Column(String(255), nullable=False, unique=True)
     password = Column(String(255), nullable=False)  # represents the password hash (not the actual password)
     additional_info = Column(JSON, default={})
     created_at = Column(DateTime, default=datetime.now)
 
+    # students = relationship("Student", back_populates="user")
+
     def __repr__(self):
         return f"<User {self.name}>"
+
 
 public_sql_classes: list = get_classes_from_globals(globals())
 

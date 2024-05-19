@@ -83,8 +83,6 @@ def _add_schema_routes(
     b_color: str = ""
 ):
     print(f"\033[0;30;{b_color}m{schema.capitalize()}\033[m")  # YELLOW
-    # print(f"\033[0;30;{b_color}mACADEMIC HUB - {schema.capitalize()}\033[m")  # YELLOW
-
     for sql_class, pydantic_class in zip(sql_classes, pydantic_classes):
         print(f"    \033[3m{sql_class.__name__:25}\033[m{pydantic_class.__name__}")
         dt_routes(sql_class, pydantic_class, basic_dt, db_dependency)
@@ -92,12 +90,11 @@ def _add_schema_routes(
         # views_routes(...)
     print()
 
-
-# * Add routes:       SCHEMA            SQL CLASSES         PYDANTIC CLASSES                DB DEPENDENCY
+# * Add routes:        SCHEMA            SQL CLASSES         PYDANTIC CLASSES               DB DEPENDENCY
 _add_schema_routes(        "public", public_sql_classes, public_pydantic_classes,         partial(get_db, "school"), "43")
-# _add_schema_routes("infrastructure",  infra_sql_classes,  infra_pydantic_classes, partial(get_db, "infrastructure"), "42")
-# _add_schema_routes(        "school", school_sql_classes, school_pydantic_classes,         partial(get_db, "school"), "41")
-# _add_schema_routes(       "library",    lib_sql_classes,    lib_pydantic_classes,        partial(get_db, "library"), "44")
+_add_schema_routes("infrastructure",  infra_sql_classes,  infra_pydantic_classes, partial(get_db, "infrastructure"), "42")
+_add_schema_routes(        "school", school_sql_classes, school_pydantic_classes,         partial(get_db, "school"), "41")
+_add_schema_routes(       "library",    lib_sql_classes,    lib_pydantic_classes,        partial(get_db, "library"), "44")
 
 
 # * views routes -----------------------------------------------------------------------------------------------

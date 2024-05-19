@@ -1,6 +1,8 @@
 from sqlalchemy import *
+from sqlalchemy.orm import relationship
 
 from src.api.database import *
+from src.model.public import GeneralUser
 
 
 SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='school_management')
@@ -15,11 +17,16 @@ for model in [
     exec(f'class {model}(NamedBaseModel): pass')
 
 class Student(IDBaseModel):
-    id = Column(Integer, ForeignKey('general_dt.general_user.id'), primary_key=True)
+    id = Column(Integer, ForeignKey('public.general_user.id'), primary_key=True)
     program_id = Column(Integer, ForeignKey('school_management.program.id'), nullable=False)
 
+    # user = relationship(GeneralUser)
+
+
 class Program(NamedBaseModel):
-    school_id = Column(Integer, ForeignKey('school_management.school.id'), nullable=False)
+    school_id = Column(Integer, ForeignKey('infrastructure_management.faculty.id'), nullable=False)
+
+    # school = relationship('Faculty', back_populates='programs')
 
 class ClassGroup(IDBaseModel):
     instructor_id = Column(Integer, ForeignKey('school_management.instructor.id'), nullable=False)
@@ -52,4 +59,4 @@ class ClassSchedule(IDBaseModel):
 
 # * Get the sql alchemy classes from the globals
 school_sql_classes: List[Type[Base]] = get_classes_from_globals(globals())  # type: ignore
-school_pydantic_classes = [create_pydantic_model(sql_class, BaseModel) for sql_class in school_sql_classes]
+school_pydantic_classes: List[Type[BaseModel]] = [create_pydantic_model(sql_class, BaseModel) for sql_class in school_sql_classes]

@@ -1,4 +1,5 @@
 from sqlalchemy import *
+from sqlalchemy.orm import relationship
 
 from src.api.database import *
 
@@ -11,6 +12,8 @@ class Building(NamedBaseModel):
     total_floors = Column(Integer)
     accessibility_features = Column(Boolean, default=False)
 
+    rooms = relationship('Room', back_populates='building')
+
 class RoomType(NamedBaseModel):
     name = Column(String(32), unique=True, nullable=False)
 
@@ -19,11 +22,12 @@ class Room(IDBaseModel):
     name = Column(String(32))
     building_id = Column(Integer, ForeignKey('infrastructure_management.building.id'), nullable=False)
     capacity = Column(Integer)
-    equipment_details = Column(JSON)
+    equipment_details = Column(JSON, default={})
+
+    building = relationship('Building', back_populates='rooms')
 
 class Faculty(NamedBaseModel):
     name = Column(String(255), nullable=False)
-    # coordinates = Column(Geography('POINT', srid=4326))  # Uncomment if using PostGIS
 
 class FacultyBuilding(SchemaBaseModel):
     faculty_id = Column(Integer, ForeignKey('infrastructure_management.faculty.id'), primary_key=True, nullable=False)

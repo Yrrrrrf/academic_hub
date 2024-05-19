@@ -40,6 +40,7 @@ app.include_router(auth)        # * authentication routes (login, logout, etc.)
 app.include_router(basic_dt)    # * data table (GET columns & all resources)
 app.include_router(crud_attr)   # * CRUD operations for attributes
 app.include_router(views)       # * views for the application (for each schema on the database)
+# app.include_router(router)      # * main router for the application
 
 
 # * Run the application

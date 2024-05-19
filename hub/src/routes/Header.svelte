@@ -13,14 +13,12 @@
 
 <header>
 	<div class="corner">
-			<img src={logo} alt="SvelteKit" />
+		<a href="/login">
+			<img src={logo} alt="Academic Hub Logo" />
+		</a>
 	</div>
 
 	<nav>
-		<!-- Creating triangle to make the nav bar look like a tab -->
-		<svg viewBox="0 0 2 3" aria-hidden="true">
-			<path d="M0,0 L1,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
-		</svg>
 		<ul>
 			{#each pages as { path, label }}
 				<li aria-current={$page.url.pathname === path ? 'page' : undefined}>
@@ -28,10 +26,6 @@
 				</li>
 			{/each}
 		</ul>
-		<!-- Closing triangle -->
-		<svg viewBox="0 0 2 3" aria-hidden="true">
-			<path d="M0,0 L0,3 C0.5,3 0.5,3 1,2 L2,0 Z" />
-		</svg>
 	</nav>
 
 	<div class="corner">
