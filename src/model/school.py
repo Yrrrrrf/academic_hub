@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, Time, Numeric
-from src.database import base_model, get_classes_from_globals
+from src.api.database import base_model, get_classes_from_globals
 
 
 SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='school_management')

@@ -11,8 +11,8 @@ from functools import partial
 
 
 # local imports
-from src.database import *
-from src.model.auth import *
+from src.api.database import *
+from src.api.auth import *
 from src.model.infrastructure import *
 from src.model.library import *
 from src.model.school import *
@@ -87,8 +87,8 @@ home, basic_dt, crud_attr, views = define_routes()
 # ^ This route is the only exception to be declared here.
 # ^ This because it's the only route that will apply some kind of data manipulation.
 # ^ This encrypts the password & stores it in the database, to avoid storing the password in plain text
-@basic_dt.post("/general_user", tags=["GeneralUser"], response_model=UserResponse)
-def register_user(user: UserCreate, db: Session = Depends(partial(get_db, "school"))):
+@basic_dt.post("/general_user", tags=["GeneralUser"], response_model=UserModel)
+def register_user(user: UserModel, db: Session = Depends(partial(get_db, "school"))):
     user_dict = user.model_dump()
     user_dict["password_hash"] = bcrypt_context.hash(user_dict["password_hash"])
     db_user = GeneralUser(**user_dict)
@@ -112,20 +112,29 @@ def _add_schema_routes(
     # print(f"\033[0;30;{b_color}mACADEMIC HUB - {schema.capitalize()}\033[m")  # YELLOW
     for schema_class in schema_classes:
         print(f"    \033[3m{schema_class.__name__}\033[m")
-        dt_routes(schema_class, UserResponse, basic_dt, db_dependency)
+        # dt_routes(schema_class, UserModel, basic_dt, db_dependency)
+        # todo: Add the other crud methods to the routes...
         # crud_routes(...)
         # views_routes(...)
     print()
 
 
 # todo: Add the respective routes for each schema
-_add_schema_routes("school", auth_classes, partial(get_db, "school"), "43")
+# todo: Impl the pydantic models for each schema
+
+# _add_schema_routes("auth", auth_classes, partial(get_db, "school"), "43")
+
+
+dt_routes(
+    sqlalchemy_model=GeneralUser,
+    pydantic_model=UserModel,
+    router=basic_dt,
+    db_dependency=partial(get_db, "school")
+)
 
 crud_routes(
-    model=GeneralUser,
-    create_model=UserCreate,
-    update_model=UserCreate,
-    response_model=UserResponse,
+    sqlalchemy_model=GeneralUser,
+    pydantic_model=UserModel,
     router=basic_dt,
     db_dependency=partial(get_db, "school")
 )

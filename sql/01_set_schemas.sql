@@ -4,8 +4,7 @@
 DO $$
 DECLARE
     schemas TEXT[] := ARRAY[  -- List of all schema names
---         'public',
-        'auth',  -- main default user data (login, password, roles, etc.)
+        'public',
         'infrastructure_management',  -- infrastructure management schema
         'library_management',  -- library management schema
         'school_management'  -- school management schema
@@ -55,42 +54,42 @@ $$ LANGUAGE plpgsql;
 SELECT create_and_grant_role(
     'infrastructure_admin',
     'infra_password',
-    ARRAY['auth', 'infrastructure_management']
+    ARRAY['public', 'infrastructure_management']
 );
 
 SELECT create_and_grant_role(
     'school_admin',
     'school_password',
-    ARRAY['auth', 'infrastructure_management',  'school_management']
+    ARRAY['public', 'infrastructure_management',  'school_management']
 );
 
 SELECT create_and_grant_role(
     'library_admin',
     'library_password',
-    ARRAY['auth', 'infrastructure_management', 'library_management']
+    ARRAY['public', 'infrastructure_management', 'library_management']
 );
 
 -- SELECT create_and_grant_role(
 --     'payment_admin',
 --     'some_payment_password',
---     ARRAY['auth', 'payment_management']
+--     ARRAY['public', 'payment_management']
 -- );
 
 -- SELECT create_and_grant_role(
 --     'security_admin',
 --     'some_security_password',
--- --     ARRAY['auth', 'security_management']
+-- --     ARRAY['public', 'security_management']
 -- );
 
 
 -- todo: Fix the error that do not allow to grant privileges to the roles!
 -- The error only happens when using this file as executable script for src/setup.py
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA auth, infrastructure_management TO infrastructure_admin;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA auth, infrastructure_management TO infrastructure_admin;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public, infrastructure_management TO infrastructure_admin;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public, infrastructure_management TO infrastructure_admin;
 
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA auth, infrastructure_management, school_management TO school_admin;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA auth, infrastructure_management, school_management TO school_admin;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public, infrastructure_management, school_management TO school_admin;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public, infrastructure_management, school_management TO school_admin;
 
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA auth, infrastructure_management, library_management TO library_admin;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA auth, infrastructure_management, library_management TO library_admin;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public, infrastructure_management, library_management TO library_admin;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public, infrastructure_management, library_management TO library_admin;
 

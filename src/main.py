@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # ? Local imports
-from src.routes import *
+from src.api.routes import *
 from src.config import Config
 
 
@@ -35,11 +35,11 @@ app.add_middleware(  # Add CORS middleware
 )
 
 # * Create routes
-app.include_router(home)  # * main routes for the application (home, about, contact, help, etc.)
-app.include_router(auth)  # * authentication routes (login, logout, etc.)
-app.include_router(basic_dt)  # * data table (GET columns & all resources)
-app.include_router(crud_attr)  # * CRUD operations for attributes
-app.include_router(views)  # * views for the application (for each schema on the database)
+app.include_router(home)        # * main routes for the application (home, about, contact, help, etc.)
+app.include_router(auth)        # * authentication routes (login, logout, etc.)
+app.include_router(basic_dt)    # * data table (GET columns & all resources)
+app.include_router(crud_attr)   # * CRUD operations for attributes
+app.include_router(views)       # * views for the application (for each schema on the database)
 
 
 # * Run the application

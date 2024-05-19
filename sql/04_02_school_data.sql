@@ -16,20 +16,6 @@ INSERT INTO school_management.program (name, school_id) VALUES
     ('Law', 1)
 ;
 
-INSERT INTO auth.general_user (name, email, password_hash) VALUES
-    -- my name...
-    ('Fernando Reza', 'frezac001@alumno.uaemex.mx', 'some_generic_password'),
-    -- test data
-    ('Jorge López', 'jlopec@alumno.uaemex.mx', 'some_generic_password'),
-    ('Carmen González', 'cgonzl@alumno.uaemex.mx', 'some_generic_password'),
-    ('Luis López', 'llopev@alumno.uaemex.mx', 'some_generic_password'),
-    ('Erick Lara', 'elaraw@alumno.uaemex.mx', 'some_generic_password'),
-    ('Juan Fuentes', 'jfueno@alumno.uaemex.mx', 'some_generic_password'),
-    -- some additional test data
-    ('Juan Pérez', 'jperezd001@alumno.uaemex.mx', 'some_generic_password'),
-    ('María González', 'mgonzp001@alumno.uaemex.mx', 'some_generic_password')
-;
-
 INSERT INTO school_management.student (id, program_id) VALUES
     (1, 1),
     (2, 2),

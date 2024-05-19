@@ -12,7 +12,7 @@ CREATE TABLE school_management.program (
 DROP TABLE IF EXISTS school_management.student CASCADE;
 -- Student Table with reference to GeneralUser
 CREATE TABLE IF NOT EXISTS school_management.student (
-  id INTEGER PRIMARY KEY REFERENCES auth.general_user(id),
+  id INTEGER PRIMARY KEY REFERENCES public.general_user(id),
   program_id INTEGER NOT NULL REFERENCES school_management.program(id)
   -- Other student-specific fields
 );

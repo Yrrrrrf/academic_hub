@@ -82,29 +82,28 @@ def base_model(schema: str = 'general_dt'):
     return SchemaBaseModel, IDBaseModel, NamedBaseModel
 
 
-
-
 # * DYNAMIC ROUTE GENERATORS -----------------------------------------------------------------------------------------------
 
+
 # * Data Table Routes (get columns & get all data)
+
 def dt_routes(
-    model: Type[Base],  # type: ignore
-    response_model: Type[BaseModel],
+    sqlalchemy_model: Type[Base],  # type: ignore
+    pydantic_model: Type[BaseModel],
     router: APIRouter,
     db_dependency: Callable
 ):
-    @router.get(f"/{model.__tablename__.lower()}/dt", tags=[model.__name__], response_model=List[str])
-    def get_columns(): return [c.name for c in model.__table__.columns]
+    @router.get(f"/{sqlalchemy_model.__tablename__.lower()}/dt", tags=[sqlalchemy_model.__name__], response_model=List[str])
+    def get_columns(): return [c.name for c in sqlalchemy_model.__table__.columns]
 
-    @router.get(f"/{model.__tablename__.lower()}s", tags=[model.__name__], response_model=List[response_model])
-    def get_all(db: Session = Depends(db_dependency)): return db.query(model).all()
+    @router.get(f"/{sqlalchemy_model.__tablename__.lower()}s", tags=[sqlalchemy_model.__name__], response_model=List[pydantic_model])
+    def get_all(db: Session = Depends(db_dependency)): return db.query(sqlalchemy_model).all()
 
 # * CRUD Operations Routes (GET, POST, PUT, DELETE)
+
 def crud_routes(
-    model: Type[Base],  # type: ignore
-    create_model: Type[BaseModel],
-    update_model: Type[BaseModel],
-    response_model: Type[BaseModel],
+    sqlalchemy_model: Type[Base],  # type: ignore
+    pydantic_model: Type[BaseModel],
     router: APIRouter,
     db_dependency: Callable,
     excluded_attributes: List[str] = [
@@ -135,17 +134,18 @@ def crud_routes(
         else:
             param_type = str  # Default to str if type is unknown
 
-        @router.get(f"/{model.__tablename__.lower()}/{attribute}={{value}}", tags=[model.__name__], response_model=List[response_model])
-        def get_resource(value: param_type, db: Session = Depends(db_dependency)):
-            result = db.query(model).filter(getattr(model, attribute) == value).all()
+        @router.get(f"/{sqlalchemy_model.__tablename__.lower()}/{attribute}={{value}}", tags=[sqlalchemy_model.__name__], response_model=List[pydantic_model])
+        def get_resource(value: param_type, db: Session = Depends(db_dependency)):  # type: ignore
+            result = db.query(sqlalchemy_model).filter(getattr(sqlalchemy_model, attribute) == value).all()
             if not result:
-                raise HTTPException(status_code=404, detail=f"No {model.__name__} with {attribute} '{value}' found.")
+                raise HTTPException(status_code=404, detail=f"No {sqlalchemy_model.__name__} with {attribute} '{value}' found.")
             return result
 
     # # * POST (Create)
-    @router.post(f"/{model.__tablename__.lower()}", tags=[model.__name__], response_model=response_model)
-    def create_resource(resource: create_model, db: Session = Depends(db_dependency)):
-        db_resource: Base = model(**resource.dict())  # Create a new resource instance
+    @router.post(f"/{sqlalchemy_model.__tablename__.lower()}", tags=[sqlalchemy_model.__name__], response_model=pydantic_model)
+    def create_resource(resource: pydantic_model, db: Session = Depends(db_dependency)):
+        # db_resource: Base = sqlalchemy_model(**resource.dict())  # Create a new resource instance
+        db_resource: Base = sqlalchemy_model(**resource.model_dump())  # Create a new resource instance  # type: ignore
         db.add(db_resource)
         try:
             db.commit()
@@ -164,12 +164,12 @@ def crud_routes(
         else:
             param_type = str  # Default to str if type is unknown
 
-        @router.put(f"/{model.__tablename__.lower()}/{attribute}={{value}}", tags=[model.__name__], response_model=response_model)
-        def update_resource(value: param_type, resource: update_model, db: Session = Depends(db_dependency)):
-            condition = getattr(model, attribute) == value
-            db_resource = db.query(model).filter(condition).first()
+        @router.put(f"/{sqlalchemy_model.__tablename__.lower()}/{attribute}={{value}}", tags=[sqlalchemy_model.__name__], response_model=pydantic_model)
+        def update_resource(value: param_type, resource: pydantic_model, db: Session = Depends(db_dependency)):  # type: ignore
+            condition = getattr(sqlalchemy_model, attribute) == value
+            db_resource = db.query(sqlalchemy_model).filter(condition).first()
             if not db_resource:
-                raise HTTPException(status_code=404, detail=f"No {model.__name__} with {attribute} '{value}' found.")
+                raise HTTPException(status_code=404, detail=f"No {sqlalchemy_model.__name__} with {attribute} '{value}' found.")
 
             for key, value in resource.dict(exclude_unset=True).items():
                 setattr(db_resource, key, value)
@@ -192,12 +192,12 @@ def crud_routes(
         else:
             param_type = str  # Default to str if type is unknown
 
-        @router.delete(f"/{model.__tablename__.lower()}/{attribute}={{value}}", tags=[model.__name__])
-        def delete_resource(value: param_type, db: Session = Depends(db_dependency)):
-            condition = getattr(model, attribute) == value
-            db_resource = db.query(model).filter(condition).first()
+        @router.delete(f"/{sqlalchemy_model.__tablename__.lower()}/{attribute}={{value}}", tags=[sqlalchemy_model.__name__])
+        def delete_resource(value: param_type, db: Session = Depends(db_dependency)):  # type: ignore
+            condition = getattr(sqlalchemy_model, attribute) == value
+            db_resource = db.query(sqlalchemy_model).filter(condition).first()
             if not db_resource:
-                raise HTTPException(status_code=404, detail=f"No {model.__name__} with {attribute} '{value}' found.")
+                raise HTTPException(status_code=404, detail=f"No {sqlalchemy_model.__name__} with {attribute} '{value}' found.")
 
             try:
                 db.delete(db_resource)
@@ -207,13 +207,13 @@ def crud_routes(
                 raise e
 
             return {
-                "message": f"Successfully deleted {model.__name__} with {attribute} '{value}'",
+                "message": f"Successfully deleted {sqlalchemy_model.__name__} with {attribute} '{value}'",
                 "resource": db_resource
                 }
 
     included_attributes = [
         (attr, col.type.__class__)
-        for attr, col in model.__table__.columns.items()
+        for attr, col in sqlalchemy_model.__table__.columns.items()
         if attr not in excluded_attributes
     ]
 

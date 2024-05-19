@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Date
 from sqlalchemy.orm import relationship
 
-from src.database import base_model, get_classes_from_globals
+from src.api.database import base_model, get_classes_from_globals
 
 
 SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='library_management')
