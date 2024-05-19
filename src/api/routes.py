@@ -13,9 +13,10 @@ from functools import partial
 # local imports
 from src.api.database import *
 from src.api.auth import *
+from src.model.public import *
 from src.model.infrastructure import *
-from src.model.library import *
 from src.model.school import *
+from src.model.library import *
 
 
 def define_routes():
@@ -90,7 +91,7 @@ home, basic_dt, crud_attr, views = define_routes()
 @basic_dt.post("/general_user", tags=["GeneralUser"], response_model=UserModel)
 def register_user(user: UserModel, db: Session = Depends(partial(get_db, "school"))):
     user_dict = user.model_dump()
-    user_dict["password_hash"] = bcrypt_context.hash(user_dict["password_hash"])
+    user_dict["password"] = bcrypt_context.hash(user_dict["password"])
     db_user = GeneralUser(**user_dict)
     db.add(db_user)
     try:
@@ -101,45 +102,29 @@ def register_user(user: UserModel, db: Session = Depends(partial(get_db, "school
         raise e
     return db_user
 
-
 def _add_schema_routes(
         schema: str, 
-        schema_classes: list[Type[Base]],  # type: ignore
+        sql_classes: list[Type[Base]],  # type: ignore
+        pydantic_classes: list[Type[BaseModel]],  # type: ignore
         db_dependency: Callable, 
         b_color: str = ""
     ):
     print(f"\033[0;30;{b_color}m{schema.capitalize()}\033[m")  # YELLOW
     # print(f"\033[0;30;{b_color}mACADEMIC HUB - {schema.capitalize()}\033[m")  # YELLOW
-    for schema_class in schema_classes:
-        print(f"    \033[3m{schema_class.__name__}\033[m")
-        # dt_routes(schema_class, UserModel, basic_dt, db_dependency)
-        # todo: Add the other crud methods to the routes...
-        # crud_routes(...)
+
+    for sql_class, pydantic_class in zip(sql_classes, pydantic_classes):
+        print(f"    \033[3m{sql_class.__name__:25}\033[m{pydantic_class.__name__}")
+        dt_routes(sql_class, pydantic_class, basic_dt, db_dependency)
+        crud_routes(sql_class, pydantic_class, crud_attr, db_dependency)
         # views_routes(...)
     print()
 
 
-# todo: Add the respective routes for each schema
-# todo: Impl the pydantic models for each schema
-
-# _add_schema_routes("auth", auth_classes, partial(get_db, "school"), "43")
-
-
-dt_routes(
-    sqlalchemy_model=GeneralUser,
-    pydantic_model=UserModel,
-    router=basic_dt,
-    db_dependency=partial(get_db, "school")
-)
-
-crud_routes(
-    sqlalchemy_model=GeneralUser,
-    pydantic_model=UserModel,
-    router=basic_dt,
-    db_dependency=partial(get_db, "school")
-)
-
-
+# * Add routes:       SCHEMA            SQL CLASSES         PYDANTIC CLASSES                DB DEPENDENCY
+_add_schema_routes(        "public", public_sql_classes, public_pydantic_classes,         partial(get_db, "school"), "43")
+_add_schema_routes("infrastructure",  infra_sql_classes,  infra_pydantic_classes, partial(get_db, "infrastructure"), "42")
+_add_schema_routes(        "school", school_sql_classes, school_pydantic_classes,         partial(get_db, "school"), "41")
+_add_schema_routes(       "library",    lib_sql_classes,    lib_pydantic_classes,        partial(get_db, "library"), "44")
 
 
 # * views routes -----------------------------------------------------------------------------------------------

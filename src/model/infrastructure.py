@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, Boolean, JSON, ForeignKeyConstraint
-from src.api.database import base_model, get_classes_from_globals
+from sqlalchemy import *
+
+from src.api.database import *
 
 
 SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='infrastructure_management')
@@ -32,5 +33,6 @@ class Library(IDBaseModel):
     faculty_id = Column(Integer, ForeignKey('infrastructure_management.faculty.id'), nullable=False)
     building_id = Column(Integer, ForeignKey('infrastructure_management.building.id'), nullable=False)
 
-# Collect all the infrastructure management classes
-infra_classes: list = get_classes_from_globals(globals())
+
+infra_sql_classes: List[Type[Base]] = get_classes_from_globals(globals())  # type: ignore
+infra_pydantic_classes = [create_pydantic_model(sql_class, BaseModel) for sql_class in infra_sql_classes]

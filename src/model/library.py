@@ -1,10 +1,10 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Date
-from sqlalchemy.orm import relationship
+from sqlalchemy import *
 
-from src.api.database import base_model, get_classes_from_globals
+from src.api.database import *
 
 
 SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='library_management')
+
 
 for model in [
     'Author', 
@@ -31,10 +31,11 @@ class BookLibrary(SchemaBaseModel):
     library_id = Column(Integer, ForeignKey('library_management.library.id'))
 
 class Loan(IDBaseModel):
-    academic_member_id = Column(Integer, ForeignKey('library_management.academic_member.id'))
+    student_id = Column(Integer, ForeignKey('school_management.student.id'))
     book_library_id = Column(Integer, ForeignKey('library_management.book_library.book_series_id'))
     loan_date = Column(Date)
     return_date = Column(Date)
 
 
-lib_classes: list = get_classes_from_globals(globals())
+lib_sql_classes: List[Type[Base]] = get_classes_from_globals(globals())  # type: ignore
+lib_pydantic_classes = [create_pydantic_model(sql_class, BaseModel) for sql_class in lib_sql_classes]

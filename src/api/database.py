@@ -20,7 +20,7 @@ from sqlalchemy.ext.declarative import declarative_base, declared_attr
 # ? Local imports
 import os
 import re
-from typing import List, Type, Callable, Any
+from typing import Dict, List, Optional, Type, Callable, Any
 
 # os.environ.clear()  # * Clear all environment variables (to avoid conflicts with old values)
 load_dotenv()  # * Load environment variables from .env file
@@ -33,15 +33,14 @@ def get_db(user_type: str):
         Args:
             user_type (str): The user type for the database connection.
     """
-    db_url = f"postgresql://{os.getenv(f'{user_type}_ADMIN')}:{os.getenv(f'{user_type}_PWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
-    # db_url = f"postgresql://postgres:fire@localhost/academic_hub"
+    # db_url = f"postgresql://{os.getenv(f'{user_type}_ADMIN')}:{os.getenv(f'{user_type}_PWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
+    db_url = f"postgresql://postgres:fire@localhost/academic_hub"
     print(f"Connecting to {user_type} database at {db_url}")
     db: Session = sessionmaker(autocommit=False, autoflush=False, bind=create_engine(db_url))()
     try:
         yield db
     finally:
         db.close()
-
 
 def get_classes_from_globals(globals_dict) -> list:
     """
@@ -52,11 +51,9 @@ def get_classes_from_globals(globals_dict) -> list:
     """
     return [obj for name, obj in globals_dict.items() if isinstance(obj, type) and obj.__module__ == globals_dict['__name__']]
 
-
 Base = declarative_base()
 
-
-def base_model(schema: str = 'general_dt'):
+def base_model(schema: str = 'public'):
     """
     Create base models for an specific schema.
 
@@ -80,6 +77,22 @@ def base_model(schema: str = 'general_dt'):
         name = Column(String(255), nullable=False)
 
     return SchemaBaseModel, IDBaseModel, NamedBaseModel
+
+
+# * Helper function to create Pydantic models from SQLAlchemy models
+def create_pydantic_model(
+    sqlalchemy_model: Type[Base], 
+    pydantic_base_model: Type[BaseModel]
+) -> Type[BaseModel]:
+    annotations: Dict[str, Any] = {}
+    for column in sqlalchemy_model.__table__.columns:
+        python_type = column.type.python_type if hasattr(column.type, 'python_type') else str
+        annotations[column.name] = Optional[python_type] if column.nullable else python_type
+
+    # Create a dictionary of attributes to be used in the Pydantic model
+    pydantic_attributes: Dict[str, Any] = {'__annotations__': annotations}
+
+    return type(f"{sqlalchemy_model.__name__}Pydantic", (pydantic_base_model,), pydantic_attributes)
 
 
 # * DYNAMIC ROUTE GENERATORS -----------------------------------------------------------------------------------------------
@@ -125,6 +138,20 @@ def crud_routes(
         db_dependency (Callable): Dependency that provides a DB session.
         excluded_attributes (List[str]): List of attributes to exclude from CRUD operations (default: ["id"]).
     """
+    # # # * POST (Create)
+    @router.post(f"/{sqlalchemy_model.__tablename__.lower()}", tags=[sqlalchemy_model.__name__], response_model=pydantic_model)
+    def create_resource(resource: pydantic_model, db: Session = Depends(db_dependency)):
+        # db_resource: Base = sqlalchemy_model(**resource.dict())  # Create a new resource instance
+        db_resource: Base = sqlalchemy_model(**resource.model_dump())  # Create a new resource instance  # type: ignore
+        db.add(db_resource)
+        try:
+            db.commit()
+            db.refresh(db_resource)
+        except Exception as e:
+            db.rollback()  # Rollback the transaction
+            raise e  # Raise the exception
+        return db_resource  # Return the resource data
+
     # * GET (Read)
     def _get_route(attribute: str, attribute_type: Any):
         if attribute_type == Integer:
@@ -140,20 +167,6 @@ def crud_routes(
             if not result:
                 raise HTTPException(status_code=404, detail=f"No {sqlalchemy_model.__name__} with {attribute} '{value}' found.")
             return result
-
-    # # * POST (Create)
-    @router.post(f"/{sqlalchemy_model.__tablename__.lower()}", tags=[sqlalchemy_model.__name__], response_model=pydantic_model)
-    def create_resource(resource: pydantic_model, db: Session = Depends(db_dependency)):
-        # db_resource: Base = sqlalchemy_model(**resource.dict())  # Create a new resource instance
-        db_resource: Base = sqlalchemy_model(**resource.model_dump())  # Create a new resource instance  # type: ignore
-        db.add(db_resource)
-        try:
-            db.commit()
-            db.refresh(db_resource)
-        except Exception as e:
-            db.rollback()  # Rollback the transaction
-            raise e  # Raise the exception
-        return db_resource  # Return the resource data
 
     # * PUT (Update)
     def _put_route(attribute: str, attribute_type: Any):

@@ -1,9 +1,8 @@
-from sqlalchemy import JSON, Column, String, DateTime
+from sqlalchemy import *
 from pydantic import *
 
-from typing import Optional
-from datetime import datetime
 
+from datetime import datetime
 from src.api.database import *
 
 
@@ -21,6 +20,8 @@ class GeneralUser(Base):
     def __repr__(self):
         return f"<User {self.name}>"
 
+public_sql_classes: list = get_classes_from_globals(globals())
+
 
 # * Pydantic Models
 class UserModel(BaseModel):
@@ -33,5 +34,4 @@ class UserModel(BaseModel):
         # orm_mode = True  # old version of pydantic
         from_attributes = True  # same as orm_mode bug has been renamed...
 
-auth_classes: list = get_classes_from_globals(globals())
-auth_classes.remove(UserModel)
+public_pydantic_classes = [cls for cls in get_classes_from_globals(globals()) if cls not in public_sql_classes]
