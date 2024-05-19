@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 
 from fastapi import Depends, HTTPException, APIRouter
 
+from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
@@ -19,15 +20,10 @@ from sqlalchemy.ext.declarative import declarative_base, declared_attr
 # ? Local imports
 import os
 import re
-from typing import Type, Callable
-
+from typing import List, Type, Callable, Any
 
 # os.environ.clear()  # * Clear all environment variables (to avoid conflicts with old values)
 load_dotenv()  # * Load environment variables from .env file
-
-
-PRIVATE_KEY = os.getenv("PRIVATE_KEY")
-PUBLIC_KEY = os.getenv("PUBLIC_KEY")
 
 
 def get_db(user_type: str):
@@ -87,116 +83,141 @@ def base_model(schema: str = 'general_dt'):
 
 
 
-# * data table routes
+
+# * DYNAMIC ROUTE GENERATORS -----------------------------------------------------------------------------------------------
+
+# * Data Table Routes (get columns & get all data)
 def dt_routes(
     model: Type[Base],  # type: ignore
-    router: APIRouter, 
-    db_dependency: Callable, 
+    response_model: Type[BaseModel],
+    router: APIRouter,
+    db_dependency: Callable
 ):
-    """
-    Creates CRUD routes for a given model and router.
+    @router.get(f"/{model.__tablename__.lower()}/dt", tags=[model.__name__], response_model=List[str])
+    def get_columns(): return [c.name for c in model.__table__.columns]
 
-    Args:
-        model (Type[Base]): The SQLAlchemy model class.
-        router (APIRouter): The FastAPI router to which the endpoints will be added.
-        db_dependency (Callable): Dependency that provides a DB session.
-        excluded_attributes (list[str]): List of attributes to exclude from CRUD operations.
-    """
-    @router.get(f"/{model.__tablename__.lower()}/dt", tags=[model.__name__])
-    def get_columns(): return [c.name for c in model.__table__.columns]  # Return a list of column names
+    @router.get(f"/{model.__tablename__.lower()}s", tags=[model.__name__], response_model=List[response_model])
+    def get_all(db: Session = Depends(db_dependency)): return db.query(model).all()
 
-    @router.get(f"/{model.__tablename__.lower()}s", tags=[model.__name__])  # Decorate the route function with the GET route for getting all resources
-    def get_all(db: Session = Depends(db_dependency)): return db.query(model).all()  # Return a list of all resources
-
-# * crud routes
-# todo: Modify this methods to return a JSON response (to be more RESTful)
+# * CRUD Operations Routes (GET, POST, PUT, DELETE)
 def crud_routes(
-    model: Type[Base],  # type: ignore ---- The SQLAlchemy model class
-    router: APIRouter,  # The FastAPI router to which the endpoints will be added
-    db_dependency: Callable,  # Dependency that provides a DB session
-    excluded_attributes: list[str] = ["id"],  # List of attributes to exclude from CRUD operations (default: ["id"])
+    model: Type[Base],  # type: ignore
+    create_model: Type[BaseModel],
+    update_model: Type[BaseModel],
+    response_model: Type[BaseModel],
+    router: APIRouter,
+    db_dependency: Callable,
+    excluded_attributes: List[str] = [
+        "id", 
+        "created_at", 
+        "password_hash", 
+        "additional_info"
+    ]
 ):
     """
-    Creates CRUD routes for a given model and router.
+    Creates CRUD routes for a given model.
 
     Args:
         model (Type[Base]): The SQLAlchemy model class.
+        create_model (Type[BaseModel]): The Pydantic model class for request validation (POST).
+        update_model (Type[BaseModel]): The Pydantic model class for request validation (PUT).
+        response_model (Type[BaseModel]): The Pydantic model class for response formatting.
         router (APIRouter): The FastAPI router to which the endpoints will be added.
         db_dependency (Callable): Dependency that provides a DB session.
-        excluded_attributes (list[str]): List of attributes to exclude from CRUD operations.
+        excluded_attributes (List[str]): List of attributes to exclude from CRUD operations (default: ["id"]).
     """
+    # * GET (Read)
+    def _get_route(attribute: str, attribute_type: Any):
+        if attribute_type == Integer:
+            param_type = int
+        elif attribute_type == String:
+            param_type = str
+        else:
+            param_type = str  # Default to str if type is unknown
 
-    def _post_route(attribute: str):  # Function to create a POST route for a given attribute
-        @router.post(f"/{model.__tablename__.lower()}/{attribute}={{value}}", tags=[model.__name__])  # Decorate the route function with the POST route
-        def create_by_attribute(value: str, data: dict, db: Session = Depends(db_dependency)):  # Route function to create a new resource
-            data[attribute] = value  # Add the attribute value to the data dictionary
-            new_resource = model(**data)  # Create a new instance of the model with the provided data
-            db.add(new_resource)  # Add the new resource to the database session
-            db.commit()  # Commit the transaction (save the new resource to the database)
-            db.refresh(new_resource)  # Refresh the new resource (e.g., to get the assigned ID)
-            return new_resource  # Return the new resource as a response
+        @router.get(f"/{model.__tablename__.lower()}/{attribute}={{value}}", tags=[model.__name__], response_model=List[response_model])
+        def get_resource(value: param_type, db: Session = Depends(db_dependency)):
+            result = db.query(model).filter(getattr(model, attribute) == value).all()
+            if not result:
+                raise HTTPException(status_code=404, detail=f"No {model.__name__} with {attribute} '{value}' found.")
+            return result
 
-    def _get_route(attribute: str):  # Function to create a GET route for a given attribute
-        @router.get(f"/{model.__tablename__.lower()}/{attribute}={{value}}", tags=[model.__name__])  # Decorate the route function with the GET route
-        def get_by_attribute(value: str, db: Session = Depends(db_dependency)):  # Route function to get resources
-            result = db.query(model).filter(getattr(model, attribute) == value).all()  # Get resources matching the attribute value
-            if not result:  # If no resources were found
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"No {model.__tablename__.capitalize()} with the form '{attribute} == {value}' found."
-                )
-            return result  # Return the list of resources
+    # # * POST (Create)
+    @router.post(f"/{model.__tablename__.lower()}", tags=[model.__name__], response_model=response_model)
+    def create_resource(resource: create_model, db: Session = Depends(db_dependency)):
+        db_resource: Base = model(**resource.dict())  # Create a new resource instance
+        db.add(db_resource)
+        try:
+            db.commit()
+            db.refresh(db_resource)
+        except Exception as e:
+            db.rollback()  # Rollback the transaction
+            raise e  # Raise the exception
+        return db_resource  # Return the resource data
 
-    def _put_route(attribute: str):  # Function to create a PUT route for a given attribute
-        @router.put(f"/{model.__tablename__.lower()}/{attribute}={{value}}", tags=[model.__name__])  # Decorate the route function with the PUT route
-        def update_by_attribute(value: str, data: dict, db: Session = Depends(db_dependency)):  # Route function to update resources
-            condition = getattr(model, attribute) == value  # Create a condition to filter resources by the attribute value
-            result = db.query(model).filter(condition).update(data, synchronize_session=False)  # Update resources matching the condition
-            db.commit()  # Commit the transaction (save the updates)
-            if result == 0:  # If no resources were updated
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"No {model.__tablename__.capitalize()} found with {attribute}={value}."
-                )
+    # * PUT (Update)
+    def _put_route(attribute: str, attribute_type: Any):
+        if attribute_type == Integer:
+            param_type = int
+        elif attribute_type == String:
+            param_type = str
+        else:
+            param_type = str  # Default to str if type is unknown
+
+        @router.put(f"/{model.__tablename__.lower()}/{attribute}={{value}}", tags=[model.__name__], response_model=response_model)
+        def update_resource(value: param_type, resource: update_model, db: Session = Depends(db_dependency)):
+            condition = getattr(model, attribute) == value
+            db_resource = db.query(model).filter(condition).first()
+            if not db_resource:
+                raise HTTPException(status_code=404, detail=f"No {model.__name__} with {attribute} '{value}' found.")
+
+            for key, value in resource.dict(exclude_unset=True).items():
+                setattr(db_resource, key, value)
+
+            try:
+                db.commit()
+                db.refresh(db_resource)
+            except Exception as e:
+                db.rollback()
+                raise e
+
+            return db_resource
+
+    # * DELETE (Delete)
+    def _delete_route(attribute: str, attribute_type: Any):
+        if attribute_type == Integer:
+            param_type = int
+        elif attribute_type == String:
+            param_type = str
+        else:
+            param_type = str  # Default to str if type is unknown
+
+        @router.delete(f"/{model.__tablename__.lower()}/{attribute}={{value}}", tags=[model.__name__])
+        def delete_resource(value: param_type, db: Session = Depends(db_dependency)):
+            condition = getattr(model, attribute) == value
+            db_resource = db.query(model).filter(condition).first()
+            if not db_resource:
+                raise HTTPException(status_code=404, detail=f"No {model.__name__} with {attribute} '{value}' found.")
+
+            try:
+                db.delete(db_resource)
+                db.commit()
+            except Exception as e:
+                db.rollback()
+                raise e
+
             return {
-                "message": f"Successfully updated {result} record(s) in {model.__tablename__.capitalize()}.",
-                "updated_count": result,
-            }
+                "message": f"Successfully deleted {model.__name__} with {attribute} '{value}'",
+                "resource": db_resource
+                }
 
-    def _delete_route(attribute: str):  # Function to create a DELETE route for a given attribute
-        @router.delete(f"/{model.__tablename__.lower()}/{attribute}={{value}}", tags=[model.__name__])  # Decorate the route function with the DELETE route
-        def delete_by_attribute(value: str, db: Session = Depends(db_dependency)):  # Route function to delete resources
-            condition = getattr(model, attribute) == value  # Create a condition to filter resources by the attribute value
-            result = db.query(model).filter(condition).delete(synchronize_session=False)  # Delete resources matching the condition
-            if result == 0:  # If no resources were deleted
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"No {model.__name__} with the form '{condition.left.description} == {condition.right.value}' found."
-                )
-            db.commit()  # Commit the transaction (save the deletions)
-            return {
-                "message": f"Successfully deleted {result} record(s) from {model.__tablename__.capitalize()}.",
-                "deleted_count": result,
-            }
+    included_attributes = [
+        (attr, col.type.__class__)
+        for attr, col in model.__table__.columns.items()
+        if attr not in excluded_attributes
+    ]
 
-    def _post_new_route():
-        @router.post(f"/{model.__tablename__.lower()}", tags=[model.__name__])  # Decorate the route function with the POST route
-        def create_new(data: dict, db: Session = Depends(db_dependency)):  # Route function to create a new resource
-            new_resource = model(**data)  # Create a new instance of the model with the provided data
-            db.add(new_resource)  # Add the new resource to the database session
-            db.commit()  # Commit the transaction (save the new resource to the database)
-            db.refresh(new_resource)  # Refresh the new resource (e.g., to get the assigned ID)
-            return new_resource  # Return the new resource as a response
-
-
-    # * Create the CRUD routes for each included attribute
-    included_attributes = [attr for attr in model.__table__.columns.keys() if attr not in excluded_attributes]  # Get a list of included attributes
-
-    # [_post_route(attr) for attr in included_attributes]     # Create (by attribute)
-    # [_get_route(attr) for attr in included_attributes]      # Read (by attribute)
-    _post_new_route()  # * Create (new resource with all attributes included)
-    [_get_route(attr) for attr in model.__table__.columns.keys()]  # * Read (with id comlumn included...)
-    [_put_route(attr) for attr in included_attributes]      # * Update
-    [_delete_route(attr) for attr in included_attributes]   # * Delete
-
-
+    for attr, attr_type in included_attributes:
+        _get_route(attr, attr_type)
+        _put_route(attr, attr_type)
+        _delete_route(attr, attr_type)
