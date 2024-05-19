@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 
 from fastapi import Depends, HTTPException, APIRouter
 
-from pydantic import BaseModel
+from pydantic import BaseModel, create_model
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
@@ -53,6 +53,7 @@ def get_classes_from_globals(globals_dict) -> list:
 
 Base = declarative_base()
 
+#  * Helper function to create base models (abstract classes) for SQLAlchemy models
 def base_model(schema: str = 'public'):
     """
     Create base models for an specific schema.
@@ -78,10 +79,9 @@ def base_model(schema: str = 'public'):
 
     return SchemaBaseModel, IDBaseModel, NamedBaseModel
 
-
 # * Helper function to create Pydantic models from SQLAlchemy models
 def create_pydantic_model(
-    sqlalchemy_model: Type[Base], 
+    sqlalchemy_model: Type[Base],  # type: ignore 
     pydantic_base_model: Type[BaseModel]
 ) -> Type[BaseModel]:
     annotations: Dict[str, Any] = {}
@@ -97,7 +97,6 @@ def create_pydantic_model(
 
 # * DYNAMIC ROUTE GENERATORS -----------------------------------------------------------------------------------------------
 
-
 # * Data Table Routes (get columns & get all data)
 
 def dt_routes(
@@ -106,30 +105,40 @@ def dt_routes(
     router: APIRouter,
     db_dependency: Callable
 ):
+    # * Get the columns of the table
     @router.get(f"/{sqlalchemy_model.__tablename__.lower()}/dt", tags=[sqlalchemy_model.__name__], response_model=List[str])
     def get_columns(): return [c.name for c in sqlalchemy_model.__table__.columns]
 
+    query_params = {  # Extract model attributes and their types
+        attr: (Optional[column.type.python_type], None)
+        for attr, column in sqlalchemy_model.__table__.columns.items()
+    }
+    QueryParamsModel = create_model(  # Dynamically create a Pydantic model for query parameters
+        f"{sqlalchemy_model.__name__}QueryParams",  # Model name
+        **query_params  # Model attributes
+    )
+
+    # * Define the route to get all resources
     @router.get(f"/{sqlalchemy_model.__tablename__.lower()}s", tags=[sqlalchemy_model.__name__], response_model=List[pydantic_model])
-    def get_all(db: Session = Depends(db_dependency)): return db.query(sqlalchemy_model).all()
+    def get_all_resources(
+        db: Session = Depends(db_dependency),
+        filters: QueryParamsModel = Depends()  # take the query parameters as a dependency  # type: ignore
+    ):
+        return db.query(sqlalchemy_model).filter(*[getattr(sqlalchemy_model, attr) == value for attr, value in filters.dict().items() if value is not None]).all()
 
-    # @router.get(
-    #     f"/{sqlalchemy_model.__tablename__.lower()}s", 
-    #     tags=[sqlalchemy_model.__name__], 
-    #     response_model=List[pydantic_model]
-    # )
-    # def get_all(
-    #     db: Session = Depends(db_dependency),
-    #     **filters: Any
-    # ):
-    #     query = db.query(sqlalchemy_model)
-
-    #     # Apply filters based on query parameters
-    #     for key, value in filters.items():
-    #         if hasattr(sqlalchemy_model, key):
-    #             query = query.filter(getattr(sqlalchemy_model, key) == value)
-
-    #     return query.all()
-
+    # todo: Check if these code below is really necessary...
+    # todo: It seams that the code above is already doing the same thing...
+    # ^ I's a redundancy...
+    # ^ But also it I noticed that sometimes when working with this type of dynamic routes
+    # ^ it's better to have a more specific route for each case...
+    # ^ TODO: CLARIFY THIS...
+    router.add_api_route(
+        path=f"/{sqlalchemy_model.__tablename__.lower()}s",
+        endpoint=get_all_resources,
+        response_model=List[pydantic_model],
+        methods=["GET"],
+        tags=[sqlalchemy_model.__name__]
+    )
 
 # * CRUD Operations Routes (GET, POST, PUT, DELETE)
 
@@ -141,7 +150,7 @@ def crud_routes(
     excluded_attributes: List[str] = [
         "id", 
         "created_at", 
-        "password_hash", 
+        "password", 
         "additional_info"
     ]
 ):
@@ -157,10 +166,9 @@ def crud_routes(
         db_dependency (Callable): Dependency that provides a DB session.
         excluded_attributes (List[str]): List of attributes to exclude from CRUD operations (default: ["id"]).
     """
-    # # # * POST (Create)
+    # * POST (Create)
     @router.post(f"/{sqlalchemy_model.__tablename__.lower()}", tags=[sqlalchemy_model.__name__], response_model=pydantic_model)
     def create_resource(resource: pydantic_model, db: Session = Depends(db_dependency)):
-        # db_resource: Base = sqlalchemy_model(**resource.dict())  # Create a new resource instance
         db_resource: Base = sqlalchemy_model(**resource.model_dump())  # Create a new resource instance  # type: ignore
         db.add(db_resource)
         try:
@@ -173,15 +181,8 @@ def crud_routes(
 
     # * GET (Read)
     def _get_route(attribute: str, attribute_type: Any):
-        if attribute_type == Integer:
-            param_type = int
-        elif attribute_type == String:
-            param_type = str
-        else:
-            param_type = str  # Default to str if type is unknown
-
         @router.get(f"/{sqlalchemy_model.__tablename__.lower()}/{attribute}={{value}}", tags=[sqlalchemy_model.__name__], response_model=List[pydantic_model])
-        def get_resource(value: param_type, db: Session = Depends(db_dependency)):  # type: ignore
+        def get_resource(value: attribute_type, db: Session = Depends(db_dependency)):  # type: ignore
             result = db.query(sqlalchemy_model).filter(getattr(sqlalchemy_model, attribute) == value).all()
             if not result:
                 raise HTTPException(status_code=404, detail=f"No {sqlalchemy_model.__name__} with {attribute} '{value}' found.")
@@ -189,17 +190,9 @@ def crud_routes(
 
     # * PUT (Update)
     def _put_route(attribute: str, attribute_type: Any):
-        if attribute_type == Integer:
-            param_type = int
-        elif attribute_type == String:
-            param_type = str
-        else:
-            param_type = str  # Default to str if type is unknown
-
         @router.put(f"/{sqlalchemy_model.__tablename__.lower()}/{attribute}={{value}}", tags=[sqlalchemy_model.__name__], response_model=pydantic_model)
-        def update_resource(value: param_type, resource: pydantic_model, db: Session = Depends(db_dependency)):  # type: ignore
-            condition = getattr(sqlalchemy_model, attribute) == value
-            db_resource = db.query(sqlalchemy_model).filter(condition).first()
+        def update_resource(value: attribute_type, resource: pydantic_model, db: Session = Depends(db_dependency)):  # type: ignore
+            db_resource = db.query(sqlalchemy_model).filter(getattr(sqlalchemy_model, attribute) == value).first()
             if not db_resource:
                 raise HTTPException(status_code=404, detail=f"No {sqlalchemy_model.__name__} with {attribute} '{value}' found.")
 
@@ -217,17 +210,9 @@ def crud_routes(
 
     # * DELETE (Delete)
     def _delete_route(attribute: str, attribute_type: Any):
-        if attribute_type == Integer:
-            param_type = int
-        elif attribute_type == String:
-            param_type = str
-        else:
-            param_type = str  # Default to str if type is unknown
-
         @router.delete(f"/{sqlalchemy_model.__tablename__.lower()}/{attribute}={{value}}", tags=[sqlalchemy_model.__name__])
-        def delete_resource(value: param_type, db: Session = Depends(db_dependency)):  # type: ignore
-            condition = getattr(sqlalchemy_model, attribute) == value
-            db_resource = db.query(sqlalchemy_model).filter(condition).first()
+        def delete_resource(value: attribute_type, db: Session = Depends(db_dependency)):  # type: ignore
+            db_resource = db.query(sqlalchemy_model).filter(getattr(sqlalchemy_model, attribute) == value).first()
             if not db_resource:
                 raise HTTPException(status_code=404, detail=f"No {sqlalchemy_model.__name__} with {attribute} '{value}' found.")
 
@@ -246,10 +231,16 @@ def crud_routes(
     included_attributes = [
         (attr, col.type.__class__)
         for attr, col in sqlalchemy_model.__table__.columns.items()
-        if attr not in excluded_attributes
+        # if attr not in excluded_attributes  # * exclude certain attributes
     ]
 
     for attr, attr_type in included_attributes:
-        _get_route(attr, attr_type)
-        _put_route(attr, attr_type)
-        _delete_route(attr, attr_type)
+        # todo: Fix the error in which this funtion returns a NoneType...
+        # todo: Move this into it's own function...
+        if attr_type == Integer: param_type = int
+        elif attr_type == String: param_type = str
+        else: param_type = str  # Default to str if type is unknown
+
+        _get_route(attr, param_type)
+        _put_route(attr, param_type)
+        _delete_route(attr, param_type)

@@ -75,7 +75,6 @@ def define_routes():
 
 home, basic_dt, crud_attr, views = define_routes()
 
-
 def _add_schema_routes(
     schema: str, 
     sql_classes: list[Type[Base]],  # type: ignore
@@ -99,60 +98,6 @@ _add_schema_routes(        "public", public_sql_classes, public_pydantic_classes
 # _add_schema_routes("infrastructure",  infra_sql_classes,  infra_pydantic_classes, partial(get_db, "infrastructure"), "42")
 # _add_schema_routes(        "school", school_sql_classes, school_pydantic_classes,         partial(get_db, "school"), "41")
 # _add_schema_routes(       "library",    lib_sql_classes,    lib_pydantic_classes,        partial(get_db, "library"), "44")
-
-
-def apply_filters(query: Query, model: Type[Base], filters: Dict[str, Any]) -> Query:
-    for attr, value in filters.items():
-        if value is not None and hasattr(model, attr):
-            query = query.filter(getattr(model, attr) == value)
-
-    return query
-
-def get_all_w_query_params(
-    router: APIRouter,
-    sqlalchemy_model: Type[Base],
-    pydantic_model: Type[BaseModel],
-    db_dependency: Session
-):
-    query_params = {  # Extract model attributes and their types
-        attr: (Optional[column.type.python_type], None)
-        for attr, column in sqlalchemy_model.__table__.columns.items()
-    }
-
-    # Dynamically create a Pydantic model for query parameters
-    QueryParamsModel = create_model(
-        f"{sqlalchemy_model.__name__}QueryParams",
-        **query_params
-    )
-
-    @router.get(
-        f"/{sqlalchemy_model.__tablename__.lower()}s",
-        tags=[sqlalchemy_model.__name__],
-        response_model=List[pydantic_model]
-    )
-    def get_all_resources(
-        db: Session = Depends(db_dependency),
-        filters: QueryParamsModel = Depends()
-        # filters: pydantic_model = Depends()
-    ):
-        query = db.query(sqlalchemy_model)
-        query = apply_filters(query, sqlalchemy_model, filters.dict())
-        return query.all()
-    
-    # Add the route to the router
-    router.add_api_route(
-        path=f"/{sqlalchemy_model.__tablename__.lower()}ssssss",
-        endpoint=get_all_resources,
-        response_model=List[pydantic_model],
-        methods=["GET"],
-        tags=[sqlalchemy_model.__name__]
-    )
-
-
-get_all_w_query_params(home, GeneralUser, UserModel, partial(get_db, "school"))
-
-
-
 
 
 # * views routes -----------------------------------------------------------------------------------------------

@@ -13,7 +13,7 @@ from src.api.database import *
 
 
 # Authentication Router
-auth: APIRouter = APIRouter(tags=["Auth"], prefix="/auth")
+auth: APIRouter = APIRouter(tags=["Auth"])
 
 # Secret key and algorithm for JWT
 SECRET_KEY = os.getenv("SECRET_KEY", "some_secret_key")
@@ -98,25 +98,6 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 # * Authentication Routes (test routes) -------------------------------------------------------
 
-# ^ This route is the only exception to be declared here.
-# ^ This because it's the only route that will apply some kind of data manipulation.
-# ^ This encrypts the password & stores it in the database, to avoid storing the password in plain text
-@auth.post("/general_user", tags=["GeneralUser"], response_model=UserModel)
-def register_user(user: UserModel, db: Session = Depends(partial(get_db, "school"))):
-    user_dict: dict[str, Any] = user.model_dump()  # Convert the Pydantic model to a dictionary
-    # Encrypt the password before storing it in the database
-    user_dict["password"] = bcrypt_context.hash(user_dict["password"])
-    db_user: GeneralUser = GeneralUser(**user_dict)  # Create a new user object
-    db.add(db_user)
-    try:
-        db.commit()
-        db.refresh(db_user)
-    except Exception as e:
-        db.rollback()
-        raise e
-    return db_user
-
-
 @auth.post("/login_token", response_model=Token)
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
@@ -127,12 +108,9 @@ async def login_for_access_token(
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
     return {
-        "access_token": create_access_token(
-            user.name, user.id, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        ),
+        "access_token": create_access_token(user.name, user.id, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)),
         "token_type": "bearer"
     }
-
 
 @auth.get("/users/me", response_model=UserModel)
 async def user_me(user: user_dependency, db: db_dependency):
@@ -140,3 +118,20 @@ async def user_me(user: user_dependency, db: db_dependency):
     if user is None:
         raise HTTPException(status_code=400, detail="Authentication Required")
     return user
+
+# ^ This route is the only exception to be declared here.
+# ^ This because it's the only route that will apply some kind of data manipulation.
+# ^ This encrypts the password & stores it in the database, to avoid storing the password in plain text
+@auth.post("/general_user", tags=["Auth"], response_model=UserModel)
+def register_user(user: UserModel, db: Session = Depends(partial(get_db, "school"))):
+    user_dict: dict[str, Any] = user.model_dump()  # Convert the Pydantic model to a dictionary
+    user_dict["password"] = bcrypt_context.hash(user_dict["password"])
+    db_user: GeneralUser = GeneralUser(**user_dict)  # Create a new user object
+    db.add(db_user)
+    try:
+        db.commit()
+        db.refresh(db_user)
+    except Exception as e:
+        db.rollback()
+        raise e
+    return db_user
