@@ -2,7 +2,7 @@
 -- This scirpt defines some basic data for the AUTH schema
 
 INSERT INTO public.general_user (name, email, password) VALUES
-    ('some-new-admin', 'admin@localhost.mx', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGxvY2FsaG9zdCIsInBhc3N3b3JkIjoic29tZV9hZG1pbl9wYXNzd29yZCJ9.rYLNzcVDGqeaZO8LCR6X1baO5iXroOsV1FKltzYrHGA'),
+    ('Etesech Penchs', 'some@example.com', '$2b$12$rFF3ukS9uwUP6BCflhCbVetzEV56HClCYeanpdGd2UdIDYKrTZoi6'),
     -- my name...
     ('Fernando Reza', 'frezac001@alumno.uaemex.mx', 'some_generic_password'),
     -- test data

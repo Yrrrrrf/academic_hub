@@ -1,14 +1,11 @@
 # 3rd party imports
 from fastapi import Depends, HTTPException, APIRouter
-from sqlalchemy import Integer, String
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, Query
 from pydantic import BaseModel
-import bcrypt
 
 # stdlib imports
-from typing import List, Type, Callable, Any
+from typing import Any, Dict, List, Type, Callable
 from functools import partial
-
 
 # local imports
 from src.api.database import *
@@ -79,36 +76,13 @@ def define_routes():
 home, basic_dt, crud_attr, views = define_routes()
 
 
-# # * Some protected route...
-# @home.get("/users/me", tags=["Auth"], response_model=UserResponse)
-# def read_users_me(current_user: GeneralUser = Depends(get_current_user)):
-#     return current_user
-
-# * Authentication Routes (test routes) -------------------------------------------------------
-# ^ This route is the only exception to be declared here.
-# ^ This because it's the only route that will apply some kind of data manipulation.
-# ^ This encrypts the password & stores it in the database, to avoid storing the password in plain text
-@basic_dt.post("/general_user", tags=["GeneralUser"], response_model=UserModel)
-def register_user(user: UserModel, db: Session = Depends(partial(get_db, "school"))):
-    user_dict = user.model_dump()
-    user_dict["password"] = bcrypt_context.hash(user_dict["password"])
-    db_user = GeneralUser(**user_dict)
-    db.add(db_user)
-    try:
-        db.commit()
-        db.refresh(db_user)
-    except Exception as e:
-        db.rollback()
-        raise e
-    return db_user
-
 def _add_schema_routes(
-        schema: str, 
-        sql_classes: list[Type[Base]],  # type: ignore
-        pydantic_classes: list[Type[BaseModel]],  # type: ignore
-        db_dependency: Callable, 
-        b_color: str = ""
-    ):
+    schema: str, 
+    sql_classes: list[Type[Base]],  # type: ignore
+    pydantic_classes: list[Type[BaseModel]],  # type: ignore
+    db_dependency: Callable, 
+    b_color: str = ""
+):
     print(f"\033[0;30;{b_color}m{schema.capitalize()}\033[m")  # YELLOW
     # print(f"\033[0;30;{b_color}mACADEMIC HUB - {schema.capitalize()}\033[m")  # YELLOW
 
@@ -122,12 +96,67 @@ def _add_schema_routes(
 
 # * Add routes:       SCHEMA            SQL CLASSES         PYDANTIC CLASSES                DB DEPENDENCY
 _add_schema_routes(        "public", public_sql_classes, public_pydantic_classes,         partial(get_db, "school"), "43")
-_add_schema_routes("infrastructure",  infra_sql_classes,  infra_pydantic_classes, partial(get_db, "infrastructure"), "42")
-_add_schema_routes(        "school", school_sql_classes, school_pydantic_classes,         partial(get_db, "school"), "41")
-_add_schema_routes(       "library",    lib_sql_classes,    lib_pydantic_classes,        partial(get_db, "library"), "44")
+# _add_schema_routes("infrastructure",  infra_sql_classes,  infra_pydantic_classes, partial(get_db, "infrastructure"), "42")
+# _add_schema_routes(        "school", school_sql_classes, school_pydantic_classes,         partial(get_db, "school"), "41")
+# _add_schema_routes(       "library",    lib_sql_classes,    lib_pydantic_classes,        partial(get_db, "library"), "44")
+
+
+def apply_filters(query: Query, model: Type[Base], filters: Dict[str, Any]) -> Query:
+    for attr, value in filters.items():
+        if value is not None and hasattr(model, attr):
+            query = query.filter(getattr(model, attr) == value)
+
+    return query
+
+def get_all_w_query_params(
+    router: APIRouter,
+    sqlalchemy_model: Type[Base],
+    pydantic_model: Type[BaseModel],
+    db_dependency: Session
+):
+    query_params = {  # Extract model attributes and their types
+        attr: (Optional[column.type.python_type], None)
+        for attr, column in sqlalchemy_model.__table__.columns.items()
+    }
+
+    # Dynamically create a Pydantic model for query parameters
+    QueryParamsModel = create_model(
+        f"{sqlalchemy_model.__name__}QueryParams",
+        **query_params
+    )
+
+    @router.get(
+        f"/{sqlalchemy_model.__tablename__.lower()}s",
+        tags=[sqlalchemy_model.__name__],
+        response_model=List[pydantic_model]
+    )
+    def get_all_resources(
+        db: Session = Depends(db_dependency),
+        filters: QueryParamsModel = Depends()
+        # filters: pydantic_model = Depends()
+    ):
+        query = db.query(sqlalchemy_model)
+        query = apply_filters(query, sqlalchemy_model, filters.dict())
+        return query.all()
+    
+    # Add the route to the router
+    router.add_api_route(
+        path=f"/{sqlalchemy_model.__tablename__.lower()}ssssss",
+        endpoint=get_all_resources,
+        response_model=List[pydantic_model],
+        methods=["GET"],
+        tags=[sqlalchemy_model.__name__]
+    )
+
+
+get_all_w_query_params(home, GeneralUser, UserModel, partial(get_db, "school"))
+
+
+
 
 
 # * views routes -----------------------------------------------------------------------------------------------
+
 def _views_routes(
     router: APIRouter, 
     db_dependency: Callable,
@@ -139,7 +168,7 @@ def _views_routes(
         router (APIRouter): The FastAPI router to which the endpoints will be added.
         db_dependency (Callable): Dependency that provides a DB session.
     """
-    @home.get("/views/{view_name}/", tags=["views"])  # Decorate the route function with the GET route for getting all resources
+    @views.get("/views/{view_name}/", tags=["views"])  # Decorate the route function with the GET route for getting all resources
     def get_view(view_name: str, db: Session = Depends(db_dependency)):  # Route function to get all resources
         view = db.execute(f"SELECT * FROM {view_name}").fetchall()  # Execute a raw SQL query to get the view data
         if not view:  # If the view is empty

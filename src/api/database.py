@@ -112,6 +112,25 @@ def dt_routes(
     @router.get(f"/{sqlalchemy_model.__tablename__.lower()}s", tags=[sqlalchemy_model.__name__], response_model=List[pydantic_model])
     def get_all(db: Session = Depends(db_dependency)): return db.query(sqlalchemy_model).all()
 
+    # @router.get(
+    #     f"/{sqlalchemy_model.__tablename__.lower()}s", 
+    #     tags=[sqlalchemy_model.__name__], 
+    #     response_model=List[pydantic_model]
+    # )
+    # def get_all(
+    #     db: Session = Depends(db_dependency),
+    #     **filters: Any
+    # ):
+    #     query = db.query(sqlalchemy_model)
+
+    #     # Apply filters based on query parameters
+    #     for key, value in filters.items():
+    #         if hasattr(sqlalchemy_model, key):
+    #             query = query.filter(getattr(sqlalchemy_model, key) == value)
+
+    #     return query.all()
+
+
 # * CRUD Operations Routes (GET, POST, PUT, DELETE)
 
 def crud_routes(

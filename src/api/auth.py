@@ -1,20 +1,24 @@
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from passlib.context import CryptContext
+from jose import JWTError, jwt
 from pydantic import *
 
-from jose import JWTError, jwt
-from passlib.context import CryptContext
-
-from functools import partial
-from typing import Annotated, Optional
 from datetime import datetime, timedelta
+from typing import Annotated, Optional
+from functools import partial
 import os
 
-from src.api.database import *
 from src.model.public import GeneralUser, UserModel  # * main user model (for authentication)
+from src.api.database import *
 
 
 # Authentication Router
 auth: APIRouter = APIRouter(tags=["Auth"], prefix="/auth")
+
+# Secret key and algorithm for JWT
+SECRET_KEY = os.getenv("SECRET_KEY", "some_secret_key")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_TIME", 30))
 
 # OAuth2 password bearer scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login_token")
@@ -32,29 +36,6 @@ class Token(BaseModel):
 
 # Dependency for database session
 db_dependency = Annotated[Session, Depends(partial(get_db, "school"))]
-
-@auth.post("/login_token", response_model=Token)
-async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db: db_dependency,
-):
-    """
-    Authenticates the user and returns a JWT token if successful.
-    
-    Args:
-        form_data (OAuth2PasswordRequestForm): The form containing the username and password.
-        db (Session): The database session.
-
-    Returns:
-        dict: The access token and token type.
-    """
-    user: GeneralUser = authenticate_user(form_data.username, form_data.password, db)
-    if not user:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
-
-    token = create_access_token(user.name, user.id, timedelta(minutes=20))
-
-    return {"access_token": token, "token_type": "bearer"}
 
 def authenticate_user(email: str, password: str, db: Session) -> Optional[GeneralUser]:
     """
@@ -74,11 +55,6 @@ def authenticate_user(email: str, password: str, db: Session) -> Optional[Genera
     if not bcrypt_context.verify(password, user.password):
         return None
     return user
-
-# Secret key and algorithm for JWT
-SECRET_KEY = os.getenv("SECRET_KEY", "some_secret_key")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_TIME", 30))
 
 def create_access_token(name: str, user_id: int, expires_delta: timedelta) -> str:
     """
@@ -119,18 +95,47 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dic
 
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
+
+# * Authentication Routes (test routes) -------------------------------------------------------
+
+# ^ This route is the only exception to be declared here.
+# ^ This because it's the only route that will apply some kind of data manipulation.
+# ^ This encrypts the password & stores it in the database, to avoid storing the password in plain text
+@auth.post("/general_user", tags=["GeneralUser"], response_model=UserModel)
+def register_user(user: UserModel, db: Session = Depends(partial(get_db, "school"))):
+    user_dict: dict[str, Any] = user.model_dump()  # Convert the Pydantic model to a dictionary
+    # Encrypt the password before storing it in the database
+    user_dict["password"] = bcrypt_context.hash(user_dict["password"])
+    db_user: GeneralUser = GeneralUser(**user_dict)  # Create a new user object
+    db.add(db_user)
+    try:
+        db.commit()
+        db.refresh(db_user)
+    except Exception as e:
+        db.rollback()
+        raise e
+    return db_user
+
+
+@auth.post("/login_token", response_model=Token)
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: db_dependency,
+):
+    user: GeneralUser = authenticate_user(form_data.username, form_data.password, db)
+    if not user:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+
+    return {
+        "access_token": create_access_token(
+            user.name, user.id, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        ),
+        "token_type": "bearer"
+    }
+
+
 @auth.get("/users/me", response_model=UserModel)
 async def user_me(user: user_dependency, db: db_dependency):
-    """
-    Retrieves the authenticated user's information.
-
-    Args:
-        user (dict): The current user.
-        db (Session): The database session.
-
-    Returns:
-        GeneralUser: The user's information.
-    """
     user = db.query(GeneralUser).filter(GeneralUser.id == user.get("id")).first()
     if user is None:
         raise HTTPException(status_code=400, detail="Authentication Required")

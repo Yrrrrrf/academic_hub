@@ -1,7 +1,6 @@
 from sqlalchemy import *
 from pydantic import *
 
-
 from datetime import datetime
 from src.api.database import *
 
@@ -13,7 +12,7 @@ class GeneralUser(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
-    password = Column(String(255), nullable=False)
+    password = Column(String(255), nullable=False)  # represents the password hash (not the actual password)
     additional_info = Column(JSON, default={})
     created_at = Column(DateTime, default=datetime.now)
 
@@ -27,7 +26,7 @@ public_sql_classes: list = get_classes_from_globals(globals())
 class UserModel(BaseModel):
     name: str
     email: EmailStr
-    password: str  # for password hashing
+    password: str  # represents the password hash (not the actual password)
     additional_info: Optional[dict] = None
 
     class Config:
