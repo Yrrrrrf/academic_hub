@@ -21,7 +21,7 @@ ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_TIME", 30))
 
 # OAuth2 password bearer scheme
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login_token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login_token")
 
 # CryptContext for hashing passwords
 bcrypt_context = CryptContext(
