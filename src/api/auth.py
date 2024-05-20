@@ -108,6 +108,7 @@ async def login_for_access_token(
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
     return {
+        # "access_token": create_access_token(user.name, user.id, timedelta(seconds=5)),
         "access_token": create_access_token(user.name, user.id, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)),
         "token_type": "bearer"
     }

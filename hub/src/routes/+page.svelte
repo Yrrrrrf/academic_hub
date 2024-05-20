@@ -1,55 +1,42 @@
-<script>
-	import NeoForm from './NeoForm.svelte';
-	let showForm = false;
+<script lang="ts">
+	import SpecialButton from '../SpecialButton.svelte';
+	import LoginForm from '../LoginForm.svelte';
+	import SignUpForm from '../SignUpForm.svelte';
 
-	export let name = 'Academic Hub';
+	export let app_name = 'Academic Hub';
 
-	function toggleForm() {
-		showForm = !showForm;
+	let showLogin = false;
+	let showSignUp = false;
+
+	function handleLogin() {
+		showLogin = true;
+	}
+
+	function handleSignUp() {
+		showSignUp = true;
+	}
+
+	function closeModal() {
+		showLogin = false;
+		showSignUp = false;
 	}
 </script>
 
-<svelte:head>
-	<title>{name}</title>
-</svelte:head>
+<main class="container h-full mx-auto flex justify-center items-center">
+	<div class="space-y-10 text-center flex flex-col items-center variant-filled-surface p-8 rounded-lg z-10">
+		<h2 class="h2">Welcome to {app_name}</h2>
+		<SpecialButton text="Log In" onClick={handleLogin} />
+		<SpecialButton text="Sign Up" onClick={handleSignUp} />
+	</div>
 
-<main>
-	<h1>Welcome to Academic Hub</h1>
-
-	<button on:click={toggleForm}>Login</button>
-	{#if showForm}
-		<NeoForm {name}/>
-	{/if}
-
+	{#if showLogin}<LoginForm closeModal={closeModal} />{/if}
+	{#if showSignUp}<SignUpForm closeModal={closeModal} />{/if}
 
 </main>
 
 <style>
-	main {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 0.6;
-		background-image: url('$lib/img/some_campus.png'); /* Add the path to your background image */
+	.container {
 		background-size: cover;
 		background-position: center;
-		height: 100vh;
-		color: white;
 	}
-
-	h1 {
-		width: 100%;
-		font-size: 3rem;
-		text-align: center;
-		margin: 0;
-	}
-
-	button {
-		margin-top: 1rem;
-		padding: 0.5rem 1rem;
-		font-size: 1rem;
-		cursor: pointer;
-	}
-
 </style>

@@ -30,8 +30,8 @@ def define_routes():
     - Get the help page
     """
 
-    # @home.get("/", tags=["Main"])  # todo: Make this rout a redirect to the main web interface (svelte app) on the future...
-    # def _home_route(): return {"The interface for Academic Hub API is on: 127.0.0.1:8000/docs"}
+    @home.get("/", tags=["Main"])  # todo: Make this rout a redirect to the main web interface (svelte app) on the future...
+    def _home_route(): return {"The interface for Academic Hub API is on: 127.0.0.1:8000/docs"}
 
     basic_dt: APIRouter = APIRouter()  # for data table routes
     """

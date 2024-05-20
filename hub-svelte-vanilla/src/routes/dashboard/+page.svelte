@@ -1,19 +1,13 @@
 <script>
     import { onMount } from 'svelte';
-    import { goto } from '$app/navigation';
-    import { api_url, access_token } from '../../stores.js';
+    import { goto } from '$app/navigation'; // For redirection if needed
 
     let userData = null;
     let errorMessage = '';
 
-    let apiUrl;
-    let token;
-
-    $: api_url.subscribe(value => apiUrl = value);
-    $: access_token.subscribe(value => token = value);
-
     onMount(async () => {
         try {
+            const token = localStorage.getItem('access_token');
             console.log('Token:', token);
 
             if (!token) {
@@ -22,20 +16,20 @@
                 return;
             }
 
-            const response = await fetch(`${apiUrl}/users/me`, {
+            const response = await fetch('https://rs6jlgj0-8000.usw3.devtunnels.ms/users/me', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 }
             });
-
             if (response.ok) {
                 userData = await response.json();
             } else {
                 errorMessage = 'Failed to fetch user data';
                 console.error('Fetch error:', response.statusText);
-                goto('/'); // Redirect to login if not authenticated
+                // Optionally redirect to login if not authenticated
+                // goto('/login');
             }
         } catch (error) {
             errorMessage = 'An error occurred';
