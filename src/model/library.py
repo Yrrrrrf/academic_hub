@@ -15,7 +15,7 @@ for model in [
 
 class Book(NamedBaseModel):
     publisher_id = Column(Integer, ForeignKey('library_management.publisher.id'))
-    ISBN = Column(String(13))
+    isbn = Column(String(13))
 
 class BookAuthor(SchemaBaseModel):
     book_id = Column(Integer, ForeignKey('library_management.book.id'), primary_key=True)

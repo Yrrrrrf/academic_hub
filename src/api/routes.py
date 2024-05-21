@@ -83,6 +83,11 @@ def _add_schema_routes(
     b_color: str = ""
 ):
     print(f"\033[0;30;{b_color}m{schema.capitalize()}\033[m")  # YELLOW
+
+    # * Add a route to get all the tables of the schema...
+    @basic_dt.get(f"/{schema.lower()}/tables", response_model=List[str], tags=["Tables"])
+    def get_tables(): return [sql_class.__tablename__ for sql_class in sql_classes]
+
     for sql_class, pydantic_class in zip(sql_classes, pydantic_classes):
         print(f"    \033[3m{sql_class.__name__:25}\033[m{pydantic_class.__name__}")
         dt_routes(sql_class, pydantic_class, basic_dt, db_dependency)

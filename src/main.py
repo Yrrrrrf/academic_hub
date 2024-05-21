@@ -29,14 +29,15 @@ app.add_middleware(  # Add CORS middleware
     CORSMiddleware,
     # allow_origins=get_cors_origins(),  # an origin is the combination of protocol & domain
     allow_origins=[
-        # "http://localhost:8080",
-        # "http://localhost:5174",
+        "http://localhost:5173",  # Your Svelte frontend URL
+        "http://127.0.0.1:5173",  # Alternative localhost URL
         "*"
         ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # * Create routes
 app.include_router(home)        # * main routes for the application (home, about, contact, help, etc.)
