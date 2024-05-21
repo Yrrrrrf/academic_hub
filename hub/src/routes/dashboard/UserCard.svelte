@@ -35,6 +35,12 @@
             console.error('Error:', error);
         }
     });
+
+
+    function handleLogOut(){
+        localStorage.clear();
+        location.reload();
+    }
 </script>
 
 {#if errorMessage}
@@ -50,14 +56,19 @@
                 <p class="text-lg text-gray-400">{userData.email}</p>
             </div>
         </div>
-        <h3 class="bg-gray-300 pt-6 pl-6 text-xl text-black">Logged In as: {userType.toUpperCase()}</h3>
-        <div class="bg-gray-300 rounded-b-2xl p-6">
-            <h3 class="text-xl text-black font-semibold">Additional Info</h3>
-            {#if userData.additional_info && Object.keys(userData.additional_info).length > 0}
-                <p class="text-black">{JSON.stringify(userData.additional_info)}</p>
-            {:else}
-                <p class="text-black">No additional data available...</p>
-            {/if}
+        <div class="bg-gray-300 p-6 text-xl text-black rounded-b-2xl">
+            <h3 class="pb-4">Logged In as: {userType.toUpperCase()}</h3>
+            <button class="btn variant-glass-primary" on:click={handleLogOut}>Logout</button>
+
+            <div class="pt-4">
+                <h3 class="font-semibold">Additional Info</h3>
+                {#if userData.additional_info && Object.keys(userData.additional_info).length > 0}
+                    <p>{JSON.stringify(userData.additional_info)}</p>
+                {:else}
+                    <p>No additional data available...</p>
+                {/if}
+            </div>
+
         </div>
     </div>
 {:else}

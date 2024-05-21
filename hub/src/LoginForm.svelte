@@ -7,10 +7,20 @@
 
     let apiUrl = '';
     $: api_url.subscribe(value => apiUrl = value);
+    let userType = '';
+    $: user_type.subscribe(value => userType = value);
+
+    const userTypes = ['student', 'teacher', 'admin'];
+    let someMessage = '';
 
     export let closeModal;
 
     async function handleSubmit({ email, password }) {
+        if (!userType) {
+            someMessage = "Must select one User Type!";
+            return;
+        }
+
         const formData = new URLSearchParams();
         formData.append('username', email);
         formData.append('password', password);
@@ -36,13 +46,7 @@
         }
     }
 
-    // Import user_type store
-    let userType = '';
-    let someMessage = '';
-
-    const userTypes = ['student', 'teacher', 'admin'];
-
-    function currentType() {
+    function updateUserType() {
         console.log('Current type:', userType);
         user_type.set(userType);
     }
@@ -53,24 +57,13 @@
     <div slot="user-type-selector" class="flex flex-col items-center mt-4">
         <RadioGroup bind:group={userType} class="flex space-x-4">
             {#each userTypes as type}
-                <RadioItem bind:group={userType} name={type} value={type.charAt(0).toUpperCase() + type.slice(1)} on:change={currentType}>
+                <RadioItem bind:group={userType} name={type} value={type} on:change={updateUserType}>
                     {type.charAt(0).toUpperCase() + type.slice(1)}
                 </RadioItem>
             {/each}
         </RadioGroup>
     </div>
     <div slot="message">
-        {#if someMessage}
-            <div class="flex justify-center text-red-500">{someMessage}</div>
-        {/if}
+        {#if someMessage}<div class="flex justify-center text-red-500">{someMessage}</div>{/if}
     </div>
 </BaseForm>
-
-<style>
-    .inset-0 {
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-    }
-</style>
