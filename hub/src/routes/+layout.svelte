@@ -6,7 +6,6 @@
 	let apiUrl = '';
 	$: api_url.subscribe(value => apiUrl = value);
 
-
 	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
 	import { LightSwitch } from '@skeletonlabs/skeleton';
 
@@ -14,13 +13,6 @@
 
 	let app_name = 'Academic Hub';
 
-	if (browser) {
-		localStorage.setItem('api_url', api_url);
-	}
-
-	// import { initializeStores, Modal } from '@skeletonlabs/skeleton';
-	//
-	// initializeStores();
 
 	// // Highlight JS
 	// import hljs from 'highlight.js/lib/core';
@@ -43,14 +35,10 @@
 	// storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 </script>
 
-<!--<Modal />-->
-
 <svelte:head>
 	<title>Academic Hub</title>
 	<link rel="icon" type="image/png" href="/img/favicon.png" />
 </svelte:head>
-
-
 
 <!-- App Shell -->
 <AppShell>

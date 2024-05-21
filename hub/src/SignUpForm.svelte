@@ -1,6 +1,6 @@
 <script>
-    import { api_url, access_token } from './stores.js';
-    import { goto } from "$app/navigation";
+    import {api_url, access_token} from './stores.js';
+    import {goto} from "$app/navigation";
 
     let apiUrl = '';
 
@@ -8,6 +8,7 @@
 
     let email = '';
     let password = '';
+    let confirmPassword = '';
     let name = '';
     let someMessage = '';
 
@@ -15,6 +16,11 @@
 
     async function handleSubmit(event) {
         event.preventDefault();
+
+        if (password !== confirmPassword) {
+            someMessage = "Passwords do not match";
+            return;
+        }
 
         const formData = {
             name: name,
@@ -59,17 +65,20 @@
         <form on:submit={handleSubmit} class="flex flex-col space-y-4">
             <div class="form-group">
                 <label for="name" class="h4 font-medium">Name</label>
-                <input type="text" id="name" bind:value={name} class="variant-soft-tertiary w-full p-2 rounded-md"
-                       required/>
+                <input type="text" id="name" bind:value={name} class="variant-soft-tertiary w-full p-2 rounded-md" required/>
             </div>
             <div class="form-group">
                 <label for="email" class="h4 font-medium">Email</label>
-                <input type="email" id="email" bind:value={email} class="variant-soft-tertiary w-full p-2 rounded-md"
-                       required/>
+                <input type="email" id="email" bind:value={email} class="variant-soft-tertiary w-full p-2 rounded-md" required/>
             </div>
             <div class="form-group">
                 <label for="password" class="h4 font-medium">Password</label>
                 <input type="password" id="password" bind:value={password}
+                       class="variant-soft-tertiary w-full p-2 rounded-md" required/>
+            </div>
+            <div class="form-group">
+                <label for="confirm-password" class="h4 font-medium">Confirm Password</label>
+                <input type="password" id="confirm-password" bind:value={confirmPassword}
                        class="variant-soft-tertiary w-full p-2 rounded-md" required/>
             </div>
             <button type="submit" class="btn variant-filled-primary">Sign In</button>
