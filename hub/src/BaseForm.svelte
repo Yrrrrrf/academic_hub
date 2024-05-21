@@ -24,6 +24,7 @@
 <div class="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50" on:click={handleOverlayClick}>
     <div class="variant-glass-surface p-10 rounded-lg shadow-lg z-50 max-w-md w-full">
         <strong class="h3 uppercase flex justify-center">{title}</strong>
+        <slot name="user-type-selector"></slot>
         <form on:submit={handleSubmit} class="flex flex-col space-y-4">
             <slot name="name"></slot>
             <div class="form-group">
@@ -35,7 +36,8 @@
                 <input type="password" id="password" bind:value={password} class="variant-soft-tertiary w-full p-2 rounded-md" required/>
             </div>
             <slot name="confirm-password"></slot>
-            <button type="submit" class="btn variant-filled-primary">{title}</button>
+            <p></p>
+            <button type="submit" class="btn variant-filled-primary ">{title}</button>
             <slot name="message"></slot>
         </form>
     </div>

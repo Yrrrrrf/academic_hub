@@ -1,16 +1,18 @@
 <script>
     import { onMount } from 'svelte';
-    import { api_url } from '../../stores.js';
-    import {Avatar} from "@skeletonlabs/skeleton";
-
+    import { api_url , user_type } from '../../stores.js';
+    import { Avatar } from "@skeletonlabs/skeleton";
 
     export let token;
 
     let userData = null;
     let errorMessage = '';
     let apiUrl;
+    let userType;
 
+    $: user_type.subscribe(value => userType = value);
     $: api_url.subscribe(value => apiUrl = value);
+
 
     onMount(async () => {
         try {
@@ -39,8 +41,8 @@
     <div class="mt-4 text-red-500 text-sm">{errorMessage}</div>
 {:else if userData}
     <div class="max-w-md mx-auto shadow-md">
-        <div class="flex items-center rounded-t-md p-4 variant-filled-surface">
-            <Avatar background="bg-tertiary-500">
+        <div class="flex items-center rounded-t-2xl p-4 variant-filled-surface">
+            <Avatar background="bg-tertiary-500" border="border-4 border-surface-300-600-token hover:!border-primary-500" cursor="cursor-pointer">
                 <span class="text-2xl font-bold leading-10 tracking-tight uppercase">{userData.name.charAt(0)}</span>
             </Avatar>
             <div class="flex-1 text-center">
@@ -48,9 +50,14 @@
                 <p class="text-lg text-gray-400">{userData.email}</p>
             </div>
         </div>
-        <div class="bg-gray-300 rounded-b-md p-8">
+        <h3 class="bg-gray-300 pt-6 pl-6 text-xl text-black">Logged In as: {userType.toUpperCase()}</h3>
+        <div class="bg-gray-300 rounded-b-2xl p-6">
             <h3 class="text-xl text-black font-semibold">Additional Info</h3>
-            <p class="text-black">{JSON.stringify(userData.additional_info)}</p>
+            {#if userData.additional_info && Object.keys(userData.additional_info).length > 0}
+                <p class="text-black">{JSON.stringify(userData.additional_info)}</p>
+            {:else}
+                <p class="text-black">No additional data available...</p>
+            {/if}
         </div>
     </div>
 {:else}

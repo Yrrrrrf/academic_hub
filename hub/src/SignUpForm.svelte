@@ -57,8 +57,7 @@
     </div>
     <div slot="confirm-password" class="form-group">
         <label for="confirm-password" class="h4 font-medium">Confirm Password</label>
-        <input type="password" id="confirm-password" bind:value={confirmPassword}
-               class="variant-soft-tertiary w-full p-2 rounded-md" required/>
+        <input type="password" id="confirm-password" bind:value={confirmPassword} class="variant-soft-tertiary w-full p-2 rounded-md" required/>
     </div>
     <div slot="message" class="flex justify-center text-red-500">{someMessage}</div>
 </BaseForm>
