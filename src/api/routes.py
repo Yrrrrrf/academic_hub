@@ -105,10 +105,9 @@ def _add_schema_routes(
     print(f"\033[0;30;{b_color}m{schema.capitalize()}\033[m")
 
     # * By Schema (routes for each schema)
-    # data table routes
     @basic_dt.get(f"/{schema.lower()}/tables", response_model=List[str], tags=["Tables"])
     def get_tables(): return [sql_class.__tablename__ for sql_class in sql_classes]
-    # views routes (all the views of the schema)
+
     view_routes(schema, views, db_dependency)
 
     # * By Table (ORM) (routes for each table)

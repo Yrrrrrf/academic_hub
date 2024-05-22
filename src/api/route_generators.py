@@ -13,6 +13,25 @@ from typing import List, Optional, Type, Callable, Any
 from src.api.database import Base
 
 
+# * Utility function to create a Pydantic model for query parameters and execute the query
+def create_query_params_model_and_execute(
+    db: Session, 
+    schema: str, 
+    table: str, 
+    model_name: str
+) -> Type[BaseModel]:
+    query = text("""
+        SELECT table_schema, table_name, column_name, is_nullable, data_type 
+        FROM information_schema.columns
+        WHERE table_schema = :schema AND table_name = :table
+    """)
+    columns = db.execute(query, {'schema': schema, 'table': table}).fetchall()
+    return create_model(
+        model_name,
+        **{col[2]: (Optional[Any], None) for col in columns}
+    )
+
+
 # * Data Table Routes (get columns & get all data)
 def dt_routes(
     sqlalchemy_model: Type[Base],  # type: ignore
@@ -25,24 +44,24 @@ def dt_routes(
     def get_columns():
         return [c.name for c in sqlalchemy_model.__table__.columns]
 
-    QueryParamsModel = create_model(  # Dynamically create a Pydantic model for query parameters
-        f"{sqlalchemy_model.__name__}QueryParams",  # Model name
-        **{attr: (Optional[column.type.python_type], None)  # Extract model attributes and their types
-            for attr, column in sqlalchemy_model.__table__.columns.items()  # * Iterate over the table columns
-        }  # * Create a dictionary of attributes & unpack it as keyword arguments (create_model)
+    QueryParamModel = create_query_params_model_and_execute(
+        next(db_dependency()), 
+        'public', 
+        sqlalchemy_model.__tablename__, 
+        f"{sqlalchemy_model.__name__}QueryParams"
     )
-
-    # * Define the route to get all resources
     @router.get(f"/{sqlalchemy_model.__tablename__.lower()}s", tags=[sqlalchemy_model.__name__], response_model=List[pydantic_model])
     def get_all_resources(
         db: Session = Depends(db_dependency),
-        filters: QueryParamsModel = Depends()  # take the query parameters as a dependency  # type: ignore
+        filters: QueryParamModel = Depends()  # type: ignore
     ):
         query = db.query(sqlalchemy_model)
         for attr, value in filters.dict().items():
             if value is not None:
                 query = query.filter(getattr(sqlalchemy_model, attr) == value)
         return query.all()
+
+
 
 # * CRUD Operations Routes (GET, POST, PUT, DELETE)
 def crud_routes(
@@ -140,27 +159,20 @@ def view_routes(
         return [row[0] for row in result]
 
     def create_view_route(view: str):
-        # Get the column metadata for the view from information_schema.columns
-        query = text("""
-            SELECT column_name, is_nullable, data_type 
-            FROM information_schema.columns 
-            WHERE table_schema = :schema AND table_name = :view
-        """)
-        columns = next(db_dependency()).execute(query, {'schema': f'{schema}_management', 'view': view}).fetchall()
-        QueryParamsModel = create_model(  # Create a Pydantic model for query parameters
-            f"{view}QueryParams",
-            **{col[0]: (Optional[Any], None) for col in columns}
+        QueryParamModel = create_query_params_model_and_execute(
+            next(db_dependency()), 
+            f'{schema}_management', 
+            view, 
+            f"{view}QueryParams"
         )
 
         @router.get(f"/{schema.lower()}/view/{view}", tags=["Views"])
         def get_view(
             db: Session = Depends(db_dependency),
-            filters: QueryParamsModel = Depends()  # Use the Pydantic model as a dependency
+            filters: QueryParamModel = Depends()
         ):
             base_query = f"SELECT * FROM {schema}_management.{view}"
-            filter_clauses = [
-                f"{key} = :{key}" for key, value in filters.dict().items() if value is not None
-            ]
+            filter_clauses = [f"{key} = :{key}" for key, value in filters.dict().items() if value is not None]
             if filter_clauses: base_query += " WHERE " + " AND ".join(filter_clauses)
             return [dict(row._mapping) for row in db.execute(text(base_query), filters.dict()).fetchall()]
 

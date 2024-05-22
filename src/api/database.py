@@ -10,7 +10,7 @@
 from dotenv import load_dotenv
 
 from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import MetaData, create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
@@ -21,6 +21,9 @@ from typing import Dict, Optional, Type, Any, List
 load_dotenv()  # * Load environment variables from .env file
 
 
+db_url = f"postgresql://postgres:fire@localhost/academic_hub"
+engine=create_engine(db_url) 
+
 def get_db(user_type: str):
     """
         Yields a database session for the specified user type.
@@ -29,9 +32,8 @@ def get_db(user_type: str):
             user_type (str): The user type for the database connection.
     """
     # db_url = f"postgresql://{os.getenv(f'{user_type}_ADMIN')}:{os.getenv(f'{user_type}_PWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
-    db_url = f"postgresql://postgres:fire@localhost/academic_hub"
     print(f"Connecting to {user_type} database at {db_url}")
-    db: Session = sessionmaker(autocommit=False, autoflush=False, bind=create_engine(db_url))()
+    db: Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
     try:
         yield db
     finally:
@@ -89,3 +91,91 @@ def create_pydantic_model(
 
     return type(f"{sqlalchemy_model.__name__}Pydantic", (pydantic_base_model,), pydantic_attributes)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from sqlalchemy import Column, Integer, String, create_engine, MetaData
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from typing import Type
+
+Base = declarative_base()
+
+def generate_sqlalchemy_model_class(table_name: str, columns: list, primary_keys: list, base=Base) -> Type[Base]:
+    """
+    Dynamically generates a SQLAlchemy model class.
+
+    Args:
+        table_name (str): The name of the table.
+        columns (list): A list of tuples containing column names and types.
+        primary_keys (list): A list of primary key columns.
+        base: The base class for the SQLAlchemy models.
+
+    Returns:
+        Type[Base]: A SQLAlchemy model class.
+    """
+    attrs = {'__tablename__': table_name}
+
+    for column_name, column_type in columns:
+        column_kwargs = {}
+        if column_name in primary_keys:
+            column_kwargs['primary_key'] = True
+
+        if column_type == 'integer':
+            column = Column(Integer, **column_kwargs)
+        elif column_type == 'string':
+            column = Column(String, **column_kwargs)
+        else:
+            # Add more type mappings as needed
+            column = Column(String, **column_kwargs)  # Default to String for unknown types
+
+        attrs[column_name] = column
+
+    return type(table_name.capitalize(), (base,), attrs)
+
+def create_models_from_metadata(engine, schema: str, base=Base):
+    """
+    Creates SQLAlchemy model classes from database metadata.
+
+    Args:
+        engine: The SQLAlchemy engine connected to the database.
+        schema (str): The schema name.
+        base: The base class for the SQLAlchemy models.
+
+    Returns:
+        dict: A dictionary of dynamically created SQLAlchemy model classes.
+    """
+    metadata = MetaData()
+    metadata.reflect(bind=engine, schema=schema, extend_existing=True)  # Reflect the schema with extend_existing=True
+
+    models = {}
+    for table_name, table in metadata.tables.items():
+        if table.schema == schema:
+            columns = [(col.name, col.type.__class__.__name__.lower()) for col in table.columns]
+            primary_keys = [col.name for col in table.columns if col.primary_key]
+            model_class = generate_sqlalchemy_model_class(table_name, columns, primary_keys, base)
+            models[table_name] = model_class
+
+    return models
+
+# Example usage:
+all_models = {}
+for schema in ['public', 'school_management', 'library_management', 'infrastructure_management']:
+    models = create_models_from_metadata(engine, schema)
+    all_models.update(models)
+    print(f"Models for schema '{schema}': {models}")
