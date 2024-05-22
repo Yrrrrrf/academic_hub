@@ -1,5 +1,4 @@
 <script>
-
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
     import { access_token, current_table, current_schema } from '../../stores.js';
@@ -15,6 +14,10 @@
 
     let schemas = [
         {
+            name: 'public',
+            // icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7L12 12L22 7L12 2ZM12 22V12.75M2 7V17L12 22M22 7V17L12 22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        },
+        {
             name: 'School',
             icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L1 7L12 12L23 7L12 2ZM12 22V12.75M1 7V17L12 22M23 7V17L12 22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
         },
@@ -27,7 +30,6 @@
             icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4H20M4 10H20M4 16H20M4 22H20M4 4V22M20 4V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
         },
     ];
-
 
     onMount(() => {if (!token) {goto('/');}});
 

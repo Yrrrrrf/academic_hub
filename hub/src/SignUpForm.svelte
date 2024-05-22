@@ -26,27 +26,27 @@
             name,
             email,
             password,
-            additional_info: {}
         };
 
         console.log('Request Body:', body);
+        console.log('Request Body:', [JSON.stringify(body)]);
 
         const response = await fetch(`${apiUrl}/general_user`, {
-            method: 'POST',
+        method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+            'Content-Type': 'application/json',
                 'Authorization': `Bearer ${access_token}`
-            },
-            body: JSON.stringify(body)
-        });
+        },
+        body: JSON.stringify(body)
+    });
 
-        if (response.ok) {
-            const result = await response.json();
-            // handle successful registration (e.g., redirect, show message, etc.)
-        } else {
-            const error = await response.json();
-            someMessage = error.message || 'Registration failed!';
-        }
+    if (response.ok) {
+        const result = await response.json();
+        // handle successful registration (e.g., redirect, show message, etc.)
+    } else {
+        const error = await response.json();
+        someMessage = error.message || 'Registration failed!';
+    }
     }
 </script>
 

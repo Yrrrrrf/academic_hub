@@ -13,7 +13,7 @@ SchemaBaseModel, IDBaseModel, NamedBaseModel = base_model(schema='public')
 class GeneralUser(NamedBaseModel):
     email = Column(String(255), nullable=False, unique=True)
     password = Column(String(255), nullable=False)  # represents the password hash (not the actual password)
-    additional_info = Column(JSON, default={})
+    # additional_info = Column(JSON, default={})
     created_at = Column(DateTime, default=datetime.now)
 
     # students = relationship("Student", back_populates="user")
@@ -30,7 +30,7 @@ class UserModel(BaseModel):
     name: str
     email: EmailStr
     password: str  # represents the password hash (not the actual password)
-    additional_info: Optional[dict] = None
+    # additional_info: Optional[dict] = None
 
     class Config:
         # orm_mode = True  # old version of pydantic

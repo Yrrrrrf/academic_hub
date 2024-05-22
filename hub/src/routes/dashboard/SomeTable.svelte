@@ -7,8 +7,6 @@
     const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 </script>
 
-<p class="p-4 text-xl font-extrabold">{capitalize(currentTable)}</p>
-
 {#if tableData.length > 0}
     <div class="table-container">
         <table class="table table-hover">

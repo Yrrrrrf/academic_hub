@@ -47,7 +47,7 @@
     <div class="mt-4 text-red-500 text-sm">{errorMessage}</div>
 {:else if userData}
     <div class="max-w-md mx-auto shadow-md">
-        <div class="flex items-center rounded-t-2xl p-4 variant-filled-surface">
+        <div class="flex items-center rounded-t-2xl variant-filled-surface p-4">
             <Avatar background="bg-tertiary-500" border="border-4 border-surface-300-600-token hover:!border-primary-500" cursor="cursor-pointer">
                 <span class="text-2xl font-bold leading-10 tracking-tight uppercase">{userData.name.charAt(0)}</span>
             </Avatar>

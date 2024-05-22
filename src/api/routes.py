@@ -1,6 +1,7 @@
 # 3rd party imports
-from fastapi import Depends, HTTPException, APIRouter
-from sqlalchemy.orm import Session, Query
+from fastapi import Depends, HTTPException, APIRouter, Query
+from sqlalchemy.orm import Session, Query, aliased
+from sqlalchemy import text
 from pydantic import BaseModel
 
 # stdlib imports
@@ -9,6 +10,7 @@ from functools import partial
 
 # local imports
 from src.api.database import *
+from src.api.route_generators import *
 from src.api.auth import *
 from src.model.public import *
 from src.model.infrastructure import *
@@ -75,6 +77,24 @@ def define_routes():
 
 home, basic_dt, crud_attr, views = define_routes()
 
+# todo: ADD SOME NEW GENERATOR TO CREATE THE SQL_CALSSES USING SOME METADATA FROM THE DATABASE...
+# * this will allow to create the routes for each schema dynamically...
+# * this will allow to create the routes for each schema dynamically...
+# * this will allow to create the routes for each schema dynamically...
+# * this will allow to create the routes for each schema dynamically...
+# * this will allow to create the routes for each schema dynamically...
+# * this will allow to create the routes for each schema dynamically...
+# * this will allow to create the routes for each schema dynamically...
+# * this will allow to create the routes for each schema dynamically...
+# * this will allow to create the routes for each schema dynamically...
+# * this will allow to create the routes for each schema dynamically...
+# * this will allow to create the routes for each schema dynamically...
+# * this will allow to create the routes for each schema dynamically...
+# * this will allow to create the routes for each schema dynamically...
+# * this will allow to create the routes for each schema dynamically...
+# * this will allow to create the routes for each schema dynamically...
+
+
 def _add_schema_routes(
     schema: str, 
     sql_classes: list[Type[Base]],  # type: ignore
@@ -82,49 +102,25 @@ def _add_schema_routes(
     db_dependency: Callable, 
     b_color: str = ""
 ):
-    print(f"\033[0;30;{b_color}m{schema.capitalize()}\033[m")  # YELLOW
+    print(f"\033[0;30;{b_color}m{schema.capitalize()}\033[m")
 
-    # * Add a route to get all the tables of the schema...
+    # * By Schema (routes for each schema)
+    # data table routes
     @basic_dt.get(f"/{schema.lower()}/tables", response_model=List[str], tags=["Tables"])
     def get_tables(): return [sql_class.__tablename__ for sql_class in sql_classes]
+    # views routes (all the views of the schema)
+    view_routes(schema, views, db_dependency)
 
+    # * By Table (ORM) (routes for each table)
     for sql_class, pydantic_class in zip(sql_classes, pydantic_classes):
         print(f"    \033[3m{sql_class.__name__:25}\033[m{pydantic_class.__name__}")
         dt_routes(sql_class, pydantic_class, basic_dt, db_dependency)
         crud_routes(sql_class, pydantic_class, crud_attr, db_dependency)
-        # views_routes(...)
     print()
+
 
 # * Add routes:        SCHEMA            SQL CLASSES         PYDANTIC CLASSES               DB DEPENDENCY
 _add_schema_routes(        "public", public_sql_classes, public_pydantic_classes,         partial(get_db, "school"), "43")
 _add_schema_routes("infrastructure",  infra_sql_classes,  infra_pydantic_classes, partial(get_db, "infrastructure"), "42")
 _add_schema_routes(        "school", school_sql_classes, school_pydantic_classes,         partial(get_db, "school"), "41")
 _add_schema_routes(       "library",    lib_sql_classes,    lib_pydantic_classes,        partial(get_db, "library"), "44")
-
-
-# * views routes -----------------------------------------------------------------------------------------------
-
-def _views_routes(
-    router: APIRouter, 
-    db_dependency: Callable,
-):
-    """
-    Creates views routes for a given model and home.
-
-    Args:
-        router (APIRouter): The FastAPI router to which the endpoints will be added.
-        db_dependency (Callable): Dependency that provides a DB session.
-    """
-    @views.get("/views/{view_name}/", tags=["views"])  # Decorate the route function with the GET route for getting all resources
-    def get_view(view_name: str, db: Session = Depends(db_dependency)):  # Route function to get all resources
-        view = db.execute(f"SELECT * FROM {view_name}").fetchall()  # Execute a raw SQL query to get the view data
-        if not view:  # If the view is empty
-            raise HTTPException(
-                status_code=404,
-                detail=f"No view named '{view_name}' found."
-            )
-        return view  # Return the view data
-
-    # todo: SET THE AUTH FOR EACH USER (ADMIN or USER)
-    # todo: ADMIN must be able to see all the tables for his schema (FOR EACH SCHEMA)
-    # todo: USER can just see the data associated to him (school & library) 
