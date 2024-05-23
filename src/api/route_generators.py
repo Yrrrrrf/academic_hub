@@ -5,16 +5,15 @@
 """
 from fastapi import Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
-from sqlalchemy import Integer, String, text
+from sqlalchemy import Integer, String, inspect, text
 from pydantic import BaseModel, create_model
 
-from typing import List, Optional, Type, Callable, Any
+from typing import Dict, List, Optional, Type, Callable, Any
 
-from src.api.database import Base
+from src.api.database import Base, all_models
 
 
-# * Utility function to create a Pydantic model for query parameters and execute the query
-def create_query_params_model_and_execute(
+def create_view_pydantic_model(
     db: Session, 
     schema: str, 
     table: str, 
@@ -26,42 +25,91 @@ def create_query_params_model_and_execute(
         WHERE table_schema = :schema AND table_name = :table
     """)
     columns = db.execute(query, {'schema': schema, 'table': table}).fetchall()
-    return create_model(
-        model_name,
-        **{col[2]: (Optional[Any], None) for col in columns}
-    )
+    return create_model(model_name, **{col[2]: (Optional[Any], None) for col in columns})
+
+def create_pydantic_model(sqlalchemy_model: Type[Base], model_name: str) -> Type[BaseModel]:
+    mapper = inspect(sqlalchemy_model)
+    fields: Dict[str, Any] = {}
+    for column in mapper.columns:
+        field_type = column.type.python_type
+        fields[column.name] = (Optional[field_type], None)
+    return create_model(model_name, **fields)
 
 
-# * Data Table Routes (get columns & get all data)
-def dt_routes(
-    sqlalchemy_model: Type[Base],  # type: ignore
-    pydantic_model: Type[BaseModel],
-    router: APIRouter,
-    db_dependency: Callable
+
+# * Add `get_tables` for a schema to the router & `get_columns` for each table
+def schema_dt_routes(
+    schema: str,
+    db_dependency: Callable, 
+    router: APIRouter
 ):
-    # * Get the columns of the table
-    @router.get(f"/{sqlalchemy_model.__tablename__.lower()}/dt", tags=[sqlalchemy_model.__name__], response_model=List[str])
-    def get_columns():
-        return [c.name for c in sqlalchemy_model.__table__.columns]
+    """
+    Add routes for the tables of a schema to the basic_dt router.
 
-    QueryParamModel = create_query_params_model_and_execute(
-        next(db_dependency()), 
-        'public', 
-        sqlalchemy_model.__tablename__, 
-        f"{sqlalchemy_model.__name__}QueryParams"
-    )
-    @router.get(f"/{sqlalchemy_model.__tablename__.lower()}s", tags=[sqlalchemy_model.__name__], response_model=List[pydantic_model])
-    def get_all_resources(
-        db: Session = Depends(db_dependency),
-        filters: QueryParamModel = Depends()  # type: ignore
-    ):
-        query = db.query(sqlalchemy_model)
-        for attr, value in filters.dict().items():
-            if value is not None:
-                query = query.filter(getattr(sqlalchemy_model, attr) == value)
-        return query.all()
+    Args:
+        schema (str): The schema name.
+        db_dependency (Callable): The dependency function to get the database session.
+    """
+    @router.get(f"/{schema.lower()}/tables", response_model=List[str], tags=[schema])
+    def get_tables():
+        all_tables = [model.__tablename__ for model in all_models.values()]
+        # todo: Improve this filter to get only the tables of the schema...
+        schema_tables = [table for table in all_tables if table.split('.')[0] == f'{schema.lower()}']
+        schema_tables = [table.split('.')[1] for table in schema_tables]
+        return schema_tables
 
+    for model in [model for model in all_models.values() if model.__name__.split('.')[0].lower() == schema]:
+        @router.get(f"/{model.__tablename__.split('.')[-1]}/columns", response_model=List[str], tags=[schema])
+        def get_columns(): return [c.name for c in model.__table__.columns]
 
+        PydanticModel = create_pydantic_model(model, f"{model.__tablename__.capitalize()}Pydantic")
+        @router.get(f"/{model.__tablename__}/all", response_model=List[PydanticModel], tags=[schema])
+        def get_all_resources(
+            db: Session = Depends(db_dependency), 
+            filters: PydanticModel = Depends()
+        ):
+            query = db.query(model)
+
+            for attr, value in filters.dict().items():
+                if value is not None:
+                    query = query.filter(getattr(model, attr) == value)
+            return query.all()
+
+# * Add all views of a schema to the router
+def schema_view_routes(
+    schema: str,
+    db_dependency: Callable,
+    router: APIRouter,
+):
+    @router.get(f"/{schema.lower()}/views", tags=['Views'], response_model=List[str])
+    def get_views(db: Session = Depends(db_dependency)):
+        query = text("SELECT table_name FROM information_schema.views WHERE table_schema = :schema")
+        result = db.execute(query, {'schema': f'{schema}'}).fetchall()
+        print(result)
+        return [row[0] for row in result]
+
+    def create_view_route(view: str):
+        QueryParamModel: Type[BaseModel] = create_view_pydantic_model(
+            next(db_dependency()), schema, view, 
+            f"{view}QueryParams"
+        )
+
+        @router.get(f"/{schema.lower()}/view/{view}", tags=["Views"])
+        def get_view(
+            db: Session = Depends(db_dependency),
+            filters: QueryParamModel = Depends()
+        ):
+            base_query: str = f"SELECT * FROM {schema}.{view}"
+            filter_clauses: list[str] = [f"{key} = :{key}" for key in filters.dict().keys() if filters.dict()[key] is not None]
+            if filter_clauses: base_query += " WHERE " + " AND ".join(filter_clauses)
+            return [dict(row._mapping) for row in db.execute(text(base_query), filters.dict()).fetchall()]
+
+    views = next(db_dependency()).execute(
+        text("SELECT table_name FROM information_schema.views WHERE table_schema = :schema"), 
+        {'schema': f'{schema}'}
+    ).fetchall()
+
+    [create_view_route(view) for view in [row[0] for row in views]]
 
 # * CRUD Operations Routes (GET, POST, PUT, DELETE)
 def crud_routes(
@@ -145,41 +193,4 @@ def crud_routes(
         # [_create_route(attr, param_type, method) for method in ["GET", "PUT", "DELETE"]]
         # param_type =  if attr_type == String else str  # Default to str if type is unknown
         [_create_route(attr, int if attr_type == Integer else str, method) for method in ["GET", "PUT", "DELETE"]]
-
-# * View Routes (get views)
-def view_routes(
-    schema: str,
-    router: APIRouter,
-    db_dependency: Callable
-):
-    @router.get(f"/{schema.lower()}/views", tags=['Views'], response_model=List[str])
-    def get_views(db: Session = Depends(db_dependency)):
-        query = text("SELECT table_name FROM information_schema.views WHERE table_schema = :schema")
-        result = db.execute(query, {'schema': f'{schema}_management'}).fetchall()
-        return [row[0] for row in result]
-
-    def create_view_route(view: str):
-        QueryParamModel = create_query_params_model_and_execute(
-            next(db_dependency()), 
-            f'{schema}_management', 
-            view, 
-            f"{view}QueryParams"
-        )
-
-        @router.get(f"/{schema.lower()}/view/{view}", tags=["Views"])
-        def get_view(
-            db: Session = Depends(db_dependency),
-            filters: QueryParamModel = Depends()
-        ):
-            base_query = f"SELECT * FROM {schema}_management.{view}"
-            filter_clauses = [f"{key} = :{key}" for key, value in filters.dict().items() if value is not None]
-            if filter_clauses: base_query += " WHERE " + " AND ".join(filter_clauses)
-            return [dict(row._mapping) for row in db.execute(text(base_query), filters.dict()).fetchall()]
-
-    views = next(db_dependency()).execute(
-        text("SELECT table_name FROM information_schema.views WHERE table_schema = :schema"), 
-        {'schema': f'{schema}_management'}
-    ).fetchall()
-
-    [create_view_route(view) for view in [row[0] for row in views]]
 

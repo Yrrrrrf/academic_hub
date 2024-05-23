@@ -10,12 +10,12 @@
 from dotenv import load_dotenv
 
 from pydantic import BaseModel
-from sqlalchemy import MetaData, create_engine, Column, Integer, String
+from sqlalchemy import *
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
 import re
-from typing import Dict, Optional, Type, Any, List
+from typing import Callable, Dict, Optional, Type, Any, List
 
 # os.environ.clear()  # * Clear all environment variables (to avoid conflicts with old values)
 load_dotenv()  # * Load environment variables from .env file
@@ -133,22 +133,38 @@ def generate_sqlalchemy_model_class(table_name: str, columns: list, primary_keys
 
     for column_name, column_type in columns:
         column_kwargs = {}
-        if column_name in primary_keys:
-            column_kwargs['primary_key'] = True
+        if column_name in primary_keys: column_kwargs['primary_key'] = True
 
-        if column_type == 'integer':
-            column = Column(Integer, **column_kwargs)
-        elif column_type == 'string':
-            column = Column(String, **column_kwargs)
-        else:
-            # Add more type mappings as needed
-            column = Column(String, **column_kwargs)  # Default to String for unknown types
+        match column_type:
+            case 'boolean':
+                column = Column(Boolean, **column_kwargs)
+            case 'integer':
+                column = Column(Integer, **column_kwargs)
+            case 'numeric':
+                column = Column(Numeric, **column_kwargs)
+            case 'text':
+                column = Column(Text, **column_kwargs)
+            case 'varchar':
+                column = Column(String, **column_kwargs)
+            case 'date':
+                column = Column(Date, **column_kwargs)
+            case 'time':
+                column = Column(Time, **column_kwargs)
+            case 'timestamp':
+                # print
+                column = Column(DateTime, **column_kwargs)
+            case 'jsonb':
+                column = Column(JSON, **column_kwargs)
+            case _:
+                print(f"Unknown column type '{column_type}' for column '{column_name}'")
+                column = Column(String, **column_kwargs)  # Default to String for unknown types
 
         attrs[column_name] = column
 
     return type(table_name.capitalize(), (base,), attrs)
 
-def create_models_from_metadata(engine, schema: str, base=Base):
+
+def create_models_from_metadata(engine, schema: str, base=Base) -> dict:
     """
     Creates SQLAlchemy model classes from database metadata.
 
@@ -163,12 +179,14 @@ def create_models_from_metadata(engine, schema: str, base=Base):
     metadata = MetaData()
     metadata.reflect(bind=engine, schema=schema, extend_existing=True)  # Reflect the schema with extend_existing=True
 
-    models = {}
+    models: dict = {}
     for table_name, table in metadata.tables.items():
         if table.schema == schema:
             columns = [(col.name, col.type.__class__.__name__.lower()) for col in table.columns]
             primary_keys = [col.name for col in table.columns if col.primary_key]
             model_class = generate_sqlalchemy_model_class(table_name, columns, primary_keys, base)
+            # print(f"Generated model class for table '{table_name}'")
+            # [print(f"{field.name}: {field.type}") for field in model_class.__table__.columns]
             models[table_name] = model_class
 
     return models
@@ -178,4 +196,5 @@ all_models = {}
 for schema in ['public', 'school_management', 'library_management', 'infrastructure_management']:
     models = create_models_from_metadata(engine, schema)
     all_models.update(models)
-    print(f"Models for schema '{schema}': {models}")
+    print(f"\nModels for schema '{schema}':")
+    [print(f"\t{name.split('.')[1]}: {model.__table__.columns.keys()}") for name, model in models.items()]

@@ -104,22 +104,12 @@ def _add_schema_routes(
 ):
     print(f"\033[0;30;{b_color}m{schema.capitalize()}\033[m")
 
-    # * By Schema (routes for each schema)
-    @basic_dt.get(f"/{schema.lower()}/tables", response_model=List[str], tags=["Tables"])
-    def get_tables(): return [sql_class.__tablename__ for sql_class in sql_classes]
+    schema_dt_routes(schema, db_dependency, basic_dt)
+    schema_view_routes(schema, db_dependency, views)
 
-    view_routes(schema, views, db_dependency)
+# # * Add routes:              SCHEMA                 SQL CLASSES         PYDANTIC CLASSES               DB DEPENDENCY
+_add_schema_routes(                   "public", public_sql_classes, public_pydantic_classes,         partial(get_db, "school"), "43")
+_add_schema_routes("infrastructure_management",  infra_sql_classes,  infra_pydantic_classes, partial(get_db, "infrastructure"), "42")
+_add_schema_routes(        "school_management", school_sql_classes, school_pydantic_classes,         partial(get_db, "school"), "41")
+_add_schema_routes(       "library_management",    lib_sql_classes,    lib_pydantic_classes,        partial(get_db, "library"), "44")
 
-    # * By Table (ORM) (routes for each table)
-    for sql_class, pydantic_class in zip(sql_classes, pydantic_classes):
-        print(f"    \033[3m{sql_class.__name__:25}\033[m{pydantic_class.__name__}")
-        dt_routes(sql_class, pydantic_class, basic_dt, db_dependency)
-        crud_routes(sql_class, pydantic_class, crud_attr, db_dependency)
-    print()
-
-
-# * Add routes:        SCHEMA            SQL CLASSES         PYDANTIC CLASSES               DB DEPENDENCY
-_add_schema_routes(        "public", public_sql_classes, public_pydantic_classes,         partial(get_db, "school"), "43")
-_add_schema_routes("infrastructure",  infra_sql_classes,  infra_pydantic_classes, partial(get_db, "infrastructure"), "42")
-_add_schema_routes(        "school", school_sql_classes, school_pydantic_classes,         partial(get_db, "school"), "41")
-_add_schema_routes(       "library",    lib_sql_classes,    lib_pydantic_classes,        partial(get_db, "library"), "44")
