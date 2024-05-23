@@ -9,13 +9,14 @@
 """
 from dotenv import load_dotenv
 
-from pydantic import BaseModel
-from sqlalchemy import *
+from pydantic import BaseModel, Field, create_model
+from sqlalchemy import create_engine, MetaData, Column, Integer, String, Boolean, Numeric, Text, Date, Time, DateTime, JSON, text
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
 import re
 from typing import Callable, Dict, Optional, Type, Any, List
+
 
 # os.environ.clear()  # * Clear all environment variables (to avoid conflicts with old values)
 load_dotenv()  # * Load environment variables from .env file
@@ -76,64 +77,15 @@ def base_model(schema: str = 'public'):
 
     return SchemaBaseModel, IDBaseModel, NamedBaseModel
 
-# * Helper function to create Pydantic models from SQLAlchemy models
-def create_pydantic_model(
-    sqlalchemy_model: Type[Base],  # type: ignore 
-    pydantic_base_model: Type[BaseModel]
-) -> Type[BaseModel]:
-    annotations: Dict[str, Any] = {}
-    for column in sqlalchemy_model.__table__.columns:
-        python_type = column.type.python_type if hasattr(column.type, 'python_type') else str
-        annotations[column.name] = Optional[python_type] if column.nullable else python_type
-
-    # Create a dictionary of attributes to be used in the Pydantic model
-    pydantic_attributes: Dict[str, Any] = {'__annotations__': annotations}
-
-    return type(f"{sqlalchemy_model.__name__}Pydantic", (pydantic_base_model,), pydantic_attributes)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-from sqlalchemy import Column, Integer, String, create_engine, MetaData
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from typing import Type
-
 Base = declarative_base()
 
 def generate_sqlalchemy_model_class(table_name: str, columns: list, primary_keys: list, base=Base) -> Type[Base]:
-    """
-    Dynamically generates a SQLAlchemy model class.
-
-    Args:
-        table_name (str): The name of the table.
-        columns (list): A list of tuples containing column names and types.
-        primary_keys (list): A list of primary key columns.
-        base: The base class for the SQLAlchemy models.
-
-    Returns:
-        Type[Base]: A SQLAlchemy model class.
-    """
     attrs = {'__tablename__': table_name}
 
     for column_name, column_type in columns:
         column_kwargs = {}
-        if column_name in primary_keys: column_kwargs['primary_key'] = True
+        if column_name in primary_keys:
+            column_kwargs['primary_key'] = True
 
         match column_type:
             case 'boolean':
@@ -151,7 +103,6 @@ def generate_sqlalchemy_model_class(table_name: str, columns: list, primary_keys
             case 'time':
                 column = Column(Time, **column_kwargs)
             case 'timestamp':
-                # print
                 column = Column(DateTime, **column_kwargs)
             case 'jsonb':
                 column = Column(JSON, **column_kwargs)
@@ -161,21 +112,12 @@ def generate_sqlalchemy_model_class(table_name: str, columns: list, primary_keys
 
         attrs[column_name] = column
 
-    return type(table_name.capitalize(), (base,), attrs)
+    model_class = type(table_name.capitalize(), (base,), attrs)
+    print(f"Generated SQLAlchemy model class for table '{table_name}': {model_class.__dict__}")
+    return model_class
 
 
 def create_models_from_metadata(engine, schema: str, base=Base) -> dict:
-    """
-    Creates SQLAlchemy model classes from database metadata.
-
-    Args:
-        engine: The SQLAlchemy engine connected to the database.
-        schema (str): The schema name.
-        base: The base class for the SQLAlchemy models.
-
-    Returns:
-        dict: A dictionary of dynamically created SQLAlchemy model classes.
-    """
     metadata = MetaData()
     metadata.reflect(bind=engine, schema=schema, extend_existing=True)  # Reflect the schema with extend_existing=True
 
@@ -185,16 +127,55 @@ def create_models_from_metadata(engine, schema: str, base=Base) -> dict:
             columns = [(col.name, col.type.__class__.__name__.lower()) for col in table.columns]
             primary_keys = [col.name for col in table.columns if col.primary_key]
             model_class = generate_sqlalchemy_model_class(table_name, columns, primary_keys, base)
-            # print(f"Generated model class for table '{table_name}'")
-            # [print(f"{field.name}: {field.type}") for field in model_class.__table__.columns]
             models[table_name] = model_class
+
+            # Debugging information
+            print(f"Generated model for table {table_name} with columns {columns} and primary keys {primary_keys}")
 
     return models
 
+
 # Example usage:
-all_models = {}
+all_models: dict[str, Type[Base]] = {}  # A dictionary to store all generated models  # type: ignore
 for schema in ['public', 'school_management', 'library_management', 'infrastructure_management']:
     models = create_models_from_metadata(engine, schema)
     all_models.update(models)
     print(f"\nModels for schema '{schema}':")
     [print(f"\t{name.split('.')[1]}: {model.__table__.columns.keys()}") for name, model in models.items()]
+
+
+# Mapping of SQL data types to Pydantic (Python) types
+SQL_TO_PYTHON_TYPE = {
+    'boolean': bool,
+    'integer': int,
+    'numeric': float,
+    'text': str,
+    'character varying': str,
+    'date': str,  # Dates can be str or datetime.date
+    'time': str,  # Times can be str or datetime.time
+    'timestamp': str,  # Timestamps can be str or datetime.datetime
+    'jsonb': dict
+}
+
+def create_pydantic_model(
+    db: Session, 
+    schema: str, 
+    table: str, 
+    model_name: str
+) -> Type[BaseModel]:
+    query = text("""
+        SELECT column_name, is_nullable, data_type 
+        FROM information_schema.columns
+        WHERE table_schema = :schema AND table_name = :table
+    """)
+    columns = db.execute(query, {'schema': schema, 'table': table}).fetchall()
+    
+    fields = {}
+    for col in columns:
+        column_name = col[0]  # column_name is the first field
+        data_type = col[2]  # data_type is the third field
+        
+        python_type = SQL_TO_PYTHON_TYPE.get(data_type, str)  # Default to str if type is unknown
+        fields[column_name] = (Optional[python_type], None)  # Make all fields Optional with default None
+    
+    return create_model(model_name, **fields)

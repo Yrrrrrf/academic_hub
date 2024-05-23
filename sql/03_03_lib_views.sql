@@ -146,4 +146,15 @@ SELECT * FROM library_management.vw_academic_member_activities;
 SELECT * FROM library_management.vw_overdue_loans;
 SELECT * FROM library_management.vw_library_utilization;  -- check the `total_book_on_loan` column...
 
-SELECT table_name FROM information_schema.views WHERE table_schema = 'library_management';
+
+
+
+
+
+
+
+
+SELECT *
+FROM information_schema.tables
+WHERE table_schema = 'public'
+  AND table_name = 'general_user';

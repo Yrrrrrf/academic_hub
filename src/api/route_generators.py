@@ -10,31 +10,7 @@ from pydantic import BaseModel, create_model
 
 from typing import Dict, List, Optional, Type, Callable, Any
 
-from src.api.database import Base, all_models
-
-
-def create_view_pydantic_model(
-    db: Session, 
-    schema: str, 
-    table: str, 
-    model_name: str
-) -> Type[BaseModel]:
-    query = text("""
-        SELECT table_schema, table_name, column_name, is_nullable, data_type 
-        FROM information_schema.columns
-        WHERE table_schema = :schema AND table_name = :table
-    """)
-    columns = db.execute(query, {'schema': schema, 'table': table}).fetchall()
-    return create_model(model_name, **{col[2]: (Optional[Any], None) for col in columns})
-
-def create_pydantic_model(sqlalchemy_model: Type[Base], model_name: str) -> Type[BaseModel]:
-    mapper = inspect(sqlalchemy_model)
-    fields: Dict[str, Any] = {}
-    for column in mapper.columns:
-        field_type = column.type.python_type
-        fields[column.name] = (Optional[field_type], None)
-    return create_model(model_name, **fields)
-
+from src.api.database import Base, all_models, create_pydantic_model
 
 
 # * Add `get_tables` for a schema to the router & `get_columns` for each table
@@ -58,22 +34,38 @@ def schema_dt_routes(
         schema_tables = [table.split('.')[1] for table in schema_tables]
         return schema_tables
 
-    for model in [model for model in all_models.values() if model.__name__.split('.')[0].lower() == schema]:
+    def create_column_route(model):
         @router.get(f"/{model.__tablename__.split('.')[-1]}/columns", response_model=List[str], tags=[schema])
-        def get_columns(): return [c.name for c in model.__table__.columns]
+        def get_columns(): 
+            return [c.name for c in model.__table__.columns]
+        return get_columns
 
-        PydanticModel = create_pydantic_model(model, f"{model.__tablename__.capitalize()}Pydantic")
-        @router.get(f"/{model.__tablename__}/all", response_model=List[PydanticModel], tags=[schema])
-        def get_all_resources(
-            db: Session = Depends(db_dependency), 
-            filters: PydanticModel = Depends()
+
+    def get_all_resources_route(model, db_dependency):
+        QueryParamModel: Type[BaseModel] = create_pydantic_model(
+            next(db_dependency()), schema, model.__tablename__.split('.')[-1],
+            f"{model.__tablename__.split('.')[-1]}QueryParams"
+        )
+
+        @router.get(f"/{model.__tablename__.split('.')[-1]}/all", tags=[schema], response_model=List[QueryParamModel])
+        def get_all(
+            db: Session = Depends(db_dependency),
+            filters: QueryParamModel = Depends()
         ):
             query = db.query(model)
-
             for attr, value in filters.dict().items():
                 if value is not None:
-                    query = query.filter(getattr(model, attr) == value)
+                    # query = query.filter(getattr(model, attr) == value)
+                    query = query
             return query.all()
+
+        return get_all
+
+    for model in [model for model in all_models.values() if model.__tablename__.split('.')[0] == f'{schema.lower()}']:
+        get_all_resources_route(model, db_dependency)
+        pass
+        # create_column_route(model)
+
 
 # * Add all views of a schema to the router
 def schema_view_routes(
@@ -89,12 +81,12 @@ def schema_view_routes(
         return [row[0] for row in result]
 
     def create_view_route(view: str):
-        QueryParamModel: Type[BaseModel] = create_view_pydantic_model(
+        QueryParamModel: Type[BaseModel] = create_pydantic_model(
             next(db_dependency()), schema, view, 
             f"{view}QueryParams"
         )
 
-        @router.get(f"/{schema.lower()}/view/{view}", tags=["Views"])
+        @router.get(f"/{schema.lower()}/view/{view}", tags=["Views"], response_model=List[QueryParamModel])
         def get_view(
             db: Session = Depends(db_dependency),
             filters: QueryParamModel = Depends()
@@ -111,6 +103,8 @@ def schema_view_routes(
 
     [create_view_route(view) for view in [row[0] for row in views]]
 
+
+
 # * CRUD Operations Routes (GET, POST, PUT, DELETE)
 def crud_routes(
     sqlalchemy_model: Type[Base],  # type: ignore
@@ -122,7 +116,7 @@ def crud_routes(
     # * POST (Create)
     @router.post(f"/{sqlalchemy_model.__tablename__.lower()}", tags=[sqlalchemy_model.__name__], response_model=pydantic_model)
     def create_resource(resource: pydantic_model, db: Session = Depends(db_dependency)):
-        db_resource: Base = sqlalchemy_model(**resource.dict())  # Create a new resource instance
+        db_resource: Base = sqlalchemy_model(resource.model_dump())  # type: ignore
         db.add(db_resource)
         try:
             db.commit()
